@@ -306,69 +306,21 @@
   }
 
   /*
-    "Qué hay adentro" scroll-journey: a scroll-driven camera travels a
-    fixed path past four framed photos of the real interior spreads,
-    one per stop, with a caption that flashes in/out near each stop.
-    No orbit/mouse-look -- purely scroll-position-driven, smoothed with
-    a lerp so it never jitters. The wrapper is 400vh (one screen per
-    stop) with a sticky inner viewport -- the same safe sticky pattern
-    already proven on this page (tall-enough wrapper, sticky child's
-    own height never exceeds the viewport).
-    Below 760px this entire mechanism is replaced by a plain stacked
-    list of the four real photos -- cheaper, simpler, and avoids
-    sticky/canvas edge cases on small screens and slow connections.
+    "Qué hay adentro": four real interior-spread photos in a simple
+    grid, each revealing on scroll. This replaced a scroll-driven
+    Three.js camera journey (camera flying along a spline past four
+    floating planes) that looked broken in practice -- tiny
+    disconnected photos adrift in a mostly empty canvas, direct user
+    feedback: "está mal hecho, es basura". A plain, reliable grid reads
+    better than a fragile 3D set piece.
   */
-  .inside-scroll { position: relative; height: 400vh; margin-top: 8px; }
-  @media (max-width: 760px) { .inside-scroll { height: auto; } }
-
-  .inside-sticky {
-    position: sticky; top: 0; height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
-  }
-  @media (max-width: 760px) { .inside-sticky { display: none; } }
-
-  #inside-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; }
-
-  /*
-    inset:0 on .inside-caption needs a sized positioned ancestor to
-    resolve against -- a wrapper whose only children are themselves
-    absolutely positioned collapses to 0 height, which silently
-    collapses inset:0 children to 0 height too (found live: opacity
-    was correctly animating, nothing was ever visible). Centering with
-    top/left 50% + transform sidesteps the whole box entirely.
-  */
-  .inside-captions { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
-  .inside-caption {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(420px, 86vw);
-    display: flex; flex-direction: column; justify-content: center;
-    text-align: center; opacity: 0;
-    background: color-mix(in srgb, var(--bg) 88%, transparent);
-    border-radius: 18px;
-    padding: 22px 26px;
-  }
-  .inside-caption .k { font-size: 0.78rem; font-weight: 700; color: var(--accent-deep); margin-bottom: 8px; }
-  .inside-caption h3 { font-size: 1.15rem; margin-bottom: 8px; }
-  .inside-caption p { font-size: 0.92rem; color: var(--ink-soft); line-height: 1.55; margin: 0; }
-
-  .inside-fallback { display: none; }
-  @media (max-width: 760px) {
-    .inside-fallback { display: flex; flex-direction: column; gap: 32px; }
-  }
-  .inside-fallback-row { display: flex; flex-direction: column; gap: 14px; }
-  .inside-fallback-row img { width: 100%; border-radius: 16px; box-shadow: 0 18px 36px -14px rgba(18,18,20,0.2); }
-  .inside-fallback-row .k { font-size: 0.78rem; font-weight: 700; color: var(--accent-deep); }
-  .inside-fallback-row h3 { font-size: 1.1rem; margin: 6px 0 6px; }
-  .inside-fallback-row p { font-size: 0.92rem; color: var(--ink-soft); line-height: 1.55; margin: 0; }
-
-  /* JS adds this to #inside-scroll if WebGL/canvas setup fails, or if
-     prefers-reduced-motion is set -- falls back to the same simple
-     stacked list used on mobile, at any screen size. */
-  .inside-scroll.no-3d .inside-sticky { display: none; }
-  .inside-scroll.no-3d { height: auto; }
-  .inside-scroll.no-3d .inside-fallback { display: flex; }
+  .inside-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px 28px; margin-top: 8px; }
+  @media (max-width: 760px) { .inside-grid { grid-template-columns: 1fr; gap: 32px; } }
+  .inside-row { display: flex; flex-direction: column; gap: 14px; }
+  .inside-row img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 16px; box-shadow: 0 18px 36px -14px rgba(18,18,20,0.2); }
+  .inside-row .k { font-size: 0.78rem; font-weight: 700; color: var(--accent-deep); }
+  .inside-row h3 { font-size: 1.1rem; margin: 6px 0 6px; }
+  .inside-row p { font-size: 0.92rem; color: var(--ink-soft); line-height: 1.55; margin: 0; }
 
   /* ---------- Edition selector ---------- */
   .edition-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: center; }
@@ -589,58 +541,30 @@
     </div>
   </section>
 
-  <div class="inside-scroll" id="inside-scroll">
-    <div class="inside-sticky">
-      <canvas id="inside-canvas" role="img" aria-label="Recorrido animado por las cuatro secciones interiores de Rumbo: metas, hábitos, calendario y revisión semanal"></canvas>
-      <div class="inside-captions" id="inside-captions">
-        <div class="inside-caption" data-stop="0">
-          <span class="k">01 · Metas</span>
-          <h3>Metas de carrera bien formadas</h3>
-          <p>En positivo y verificables: sabrás exactamente cuándo las lograste, no solo que "lo intentaste".</p>
-        </div>
-        <div class="inside-caption" data-stop="1">
-          <span class="k">02 · Hábitos</span>
-          <h3>Tracker de hábitos semanal</h3>
-          <p>Una cuadrícula para marcar lo que sí hiciste esta semana — constancia visible, no solo intención.</p>
-        </div>
-        <div class="inside-caption" data-stop="2">
-          <span class="k">03 · Calendario</span>
-          <h3>Calendario mensual y semanal</h3>
-          <p>Vista de semana para el día a día, vista de mes para no perder el panorama completo.</p>
-        </div>
-        <div class="inside-caption" data-stop="3">
-          <span class="k">04 · Revisión</span>
-          <h3>Revisión guiada</h3>
-          <p>Preguntas ya impresas al cierre de cada semana: qué aprendí, qué ajusto para la siguiente.</p>
-        </div>
-      </div>
+  <div class="inside-grid">
+    <div class="inside-row reveal">
+      <img src="assets/interior.jpg" alt="Página de metas de Rumbo, layout semanal en papel grueso color crema">
+      <span class="k">01 · Metas</span>
+      <h3>Metas de carrera bien formadas</h3>
+      <p>En positivo y verificables: sabrás exactamente cuándo las lograste, no solo que "lo intentaste".</p>
     </div>
-
-    <div class="inside-fallback" id="inside-fallback">
-      <div class="inside-fallback-row">
-        <img src="assets/interior.jpg" alt="Página de metas de Rumbo, layout semanal en papel grueso color crema">
-        <span class="k">01 · Metas</span>
-        <h3>Metas de carrera bien formadas</h3>
-        <p>En positivo y verificables: sabrás exactamente cuándo las lograste, no solo que "lo intentaste".</p>
-      </div>
-      <div class="inside-fallback-row">
-        <img src="assets/habitos.jpg" alt="Página de tracker de hábitos de Rumbo">
-        <span class="k">02 · Hábitos</span>
-        <h3>Tracker de hábitos semanal</h3>
-        <p>Una cuadrícula para marcar lo que sí hiciste esta semana — constancia visible, no solo intención.</p>
-      </div>
-      <div class="inside-fallback-row">
-        <img src="assets/calendario.jpg" alt="Página de calendario mensual y semanal de Rumbo">
-        <span class="k">03 · Calendario</span>
-        <h3>Calendario mensual y semanal</h3>
-        <p>Vista de semana para el día a día, vista de mes para no perder el panorama completo.</p>
-      </div>
-      <div class="inside-fallback-row">
-        <img src="assets/revision.jpg" alt="Página de revisión semanal guiada de Rumbo">
-        <span class="k">04 · Revisión</span>
-        <h3>Revisión guiada</h3>
-        <p>Preguntas ya impresas al cierre de cada semana: qué aprendí, qué ajusto para la siguiente.</p>
-      </div>
+    <div class="inside-row reveal">
+      <img src="assets/habitos.jpg" alt="Página de tracker de hábitos de Rumbo">
+      <span class="k">02 · Hábitos</span>
+      <h3>Tracker de hábitos semanal</h3>
+      <p>Una cuadrícula para marcar lo que sí hiciste esta semana — constancia visible, no solo intención.</p>
+    </div>
+    <div class="inside-row reveal">
+      <img src="assets/calendario.jpg" alt="Página de calendario mensual y semanal de Rumbo">
+      <span class="k">03 · Calendario</span>
+      <h3>Calendario mensual y semanal</h3>
+      <p>Vista de semana para el día a día, vista de mes para no perder el panorama completo.</p>
+    </div>
+    <div class="inside-row reveal">
+      <img src="assets/revision.jpg" alt="Página de revisión semanal guiada de Rumbo">
+      <span class="k">04 · Revisión</span>
+      <h3>Revisión guiada</h3>
+      <p>Preguntas ya impresas al cierre de cada semana: qué aprendí, qué ajusto para la siguiente.</p>
     </div>
   </div>
 
@@ -1247,174 +1171,6 @@
       }
     })();
   })();
-</script>
-<script type="module">
-  /*
-    "Qué hay adentro" camera-spline scroll journey.
-
-    Scroll position 0 to 1 (mapped from the 400vh wrapper) drives a
-    camera along a fixed CatmullRom spline past four planes, each
-    textured with one of the four real interior-spread photos. No free
-    orbit, no mouse look -- the camera only ever moves along the spline,
-    driven by scroll. The raw scroll progress is smoothed with a lerp
-    factor of 0.08 so the motion never jitters frame to frame.
-
-    Each caption fades in between local progress 0.2-0.3 of its own
-    stop's quarter of the journey, holds briefly, and is fully faded
-    out by local progress 0.4.
-
-    Falls back to a plain stacked list of the same four photos (same
-    markup already used on mobile) if WebGL/canvas setup throws, or if
-    prefers-reduced-motion is set -- this mirrors the fallback pattern
-    used throughout the rest of the page.
-  */
-  var reduceMotionInside = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var insideScrollEl = document.getElementById('inside-scroll');
-  var insideCanvas = document.getElementById('inside-canvas');
-
-  function fallbackToStaticInside() {
-    if (insideScrollEl) insideScrollEl.classList.add('no-3d');
-  }
-
-  if (reduceMotionInside || !insideScrollEl || !insideCanvas || window.innerWidth <= 760) {
-    fallbackToStaticInside();
-  } else {
-    (async function () {
-      try {
-        var THREE = await import('three');
-
-        var STOP_PHOTOS = ['assets/interior.jpg', 'assets/habitos.jpg', 'assets/calendario.jpg', 'assets/revision.jpg'];
-        var NUM_STOPS = STOP_PHOTOS.length;
-
-        var scene = new THREE.Scene();
-        var bgColor = 0xf6f4f0;
-        scene.background = new THREE.Color(bgColor);
-        scene.fog = new THREE.Fog(bgColor, 4, 15);
-
-        var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-
-        var renderer = new THREE.WebGLRenderer({ canvas: insideCanvas, antialias: true, alpha: false });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        // scene.background alone left the renderer's actual GL clear
-        // color stuck at black -- verified live via
-        // renderer.getClearColor(), confirmed not a guess. Setting it
-        // explicitly is what actually fixes the black canvas.
-        renderer.setClearColor(bgColor, 1);
-
-        // Fixed spline: start point + one point per stop, gently
-        // weaving left/right so passing artworks feel like a real
-        // walk through a room rather than a straight dolly shot.
-        var curvePoints = [new THREE.Vector3(0, 0, 2)];
-        for (var i = 0; i < NUM_STOPS; i++) {
-          var side = (i % 2 === 0) ? 1 : -1;
-          curvePoints.push(new THREE.Vector3(side * 0.5, 0.04 * side, 2 - (i + 1) * 4));
-        }
-        var curve = new THREE.CatmullRomCurve3(curvePoints);
-
-        // One plane per stop, offset to the opposite side of the path
-        // at roughly that stop's point along the curve, like a framed
-        // piece passed on a gallery wall.
-        var loader = new THREE.TextureLoader();
-        var planes = [];
-        STOP_PHOTOS.forEach(function (src, i) {
-          // The curve has one extra leading point (the start), so with
-          // near-equal segment lengths its arc-length parametrization
-          // places control point index (i+1) -- this stop -- at
-          // t=(i+1)/NUM_STOPS, i.e. the END of this stop's own scroll
-          // segment [i/N, (i+1)/N], not its start or midpoint. Verified
-          // live: placing it anywhere else put the wrong photo in frame
-          // while a different stop's caption was showing.
-          var t = (i + 1) / NUM_STOPS;
-          var center = curve.getPointAt(t);
-          var side = (i % 2 === 0) ? -1 : 1;
-          var tex = loader.load(src);
-          tex.colorSpace = THREE.SRGBColorSpace;
-          var mat = new THREE.MeshBasicMaterial({ map: tex });
-          var geo = new THREE.PlaneGeometry(1.6, 1.2);
-          var mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(center.x + side * 1.3, 0, center.z);
-          mesh.rotation.y = side * 0.5;
-          scene.add(mesh);
-          planes.push(mesh);
-        });
-
-        var rawT = 0;
-        var smoothedT = 0;
-        var LERP = 0.08;
-
-        function computeProgress() {
-          var rect = insideScrollEl.getBoundingClientRect();
-          var scrollable = rect.height - window.innerHeight;
-          if (scrollable <= 0) { rawT = 0; return; }
-          rawT = Math.max(0, Math.min(1, -rect.top / scrollable));
-        }
-
-        var captionEls = document.querySelectorAll('.inside-caption');
-        function updateCaptions() {
-          captionEls.forEach(function (el) {
-            var i = parseInt(el.getAttribute('data-stop'), 10);
-            var segStart = i / NUM_STOPS;
-            var segEnd = (i + 1) / NUM_STOPS;
-            var local = (smoothedT - segStart) / (segEnd - segStart);
-            local = Math.max(0, Math.min(1, local));
-            var op;
-            if (local < 0.2) op = 0;
-            else if (local < 0.3) op = (local - 0.2) / 0.1;
-            else if (local < 0.4) op = 1 - (local - 0.3) / 0.1;
-            else op = 0;
-            el.style.opacity = op;
-          });
-        }
-
-        function resize() {
-          var w = insideCanvas.clientWidth || insideScrollEl.clientWidth;
-          var h = insideCanvas.clientHeight || window.innerHeight;
-          camera.aspect = w / h;
-          camera.updateProjectionMatrix();
-          renderer.setSize(w, h, false);
-        }
-        resize();
-        window.addEventListener('resize', resize);
-
-        var running = false;
-        function renderFrame() {
-          computeProgress();
-          smoothedT += (rawT - smoothedT) * LERP;
-          // Capped below 1 so the look-ahead target below is never at
-          // the exact same curve point as the camera -- at t=1 exactly
-          // that gap collapsed to zero, giving camera.lookAt() a
-          // zero-length direction and a degenerate view matrix that
-          // rendered as a plain black frame. Verified live: this was
-          // reproducible every time scroll reached the very bottom.
-          var posT = Math.min(smoothedT, 0.995);
-          var pos = curve.getPointAt(posT);
-          var lookTarget = curve.getPointAt(Math.min(posT + 0.03, 1));
-          camera.position.copy(pos);
-          camera.lookAt(lookTarget);
-          updateCaptions();
-          renderer.render(scene, camera);
-          if (running) requestAnimationFrame(renderFrame);
-        }
-
-        // Only run the render loop while the section is actually on
-        // screen -- a scroll-driven 3D section off-screen has nothing
-        // to show and shouldn't burn a continuous rAF loop.
-        var sectionIO = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting && !running) {
-              running = true;
-              requestAnimationFrame(renderFrame);
-            } else if (!entry.isIntersecting) {
-              running = false;
-            }
-          });
-        }, { threshold: 0 });
-        sectionIO.observe(insideScrollEl);
-      } catch (err) {
-        fallbackToStaticInside();
-      }
-    })();
-  }
 </script>
 <script type="module">
   /*
