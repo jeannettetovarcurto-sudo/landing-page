@@ -1082,8 +1082,13 @@
 
       // Autoplay the loop; if the browser blocks it (or the file 404s)
       // fall back to the static poster photo, same defensive pattern
-      // as every other media element on this page.
+      // as every other media element on this page. A rejected first
+      // play() attempt (autoplay policy racing the page load) doesn't
+      // necessarily mean the video never plays -- clear the fallback
+      // again once real playback actually starts, so a transient
+      // rejection doesn't permanently hide a video that works fine.
       video.addEventListener('error', function () { videoWrap.classList.add('no-video'); });
+      video.addEventListener('playing', function () { videoWrap.classList.remove('no-video'); });
       var playPromise = video.play();
       if (playPromise && playPromise.catch) {
         playPromise.catch(function () { videoWrap.classList.add('no-video'); });
