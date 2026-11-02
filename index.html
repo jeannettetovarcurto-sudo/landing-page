@@ -175,92 +175,102 @@
   nav.topbar .nav-links a:hover { color: var(--ink); }
   @media (max-width: 620px) { nav.topbar .nav-links { display: none; } }
 
-  /* ---------- Hero ---------- */
-  .hero-band { padding-top: 8px; padding-bottom: 40px; }
-  header.hero {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 48px 0 8px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .hero-copy h1 {
-    font-size: clamp(2.4rem, 5.6vw, 3.9rem);
-    margin: 18px 0 16px;
-  }
-  .hero-copy h1 .accent-word { color: var(--accent); }
-  .hero-copy .sub {
-    font-size: 1.08rem;
-    color: var(--ink-soft);
-    max-width: 46ch;
-    line-height: 1.6;
-    margin: 0 auto 28px;
-  }
-  .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px; }
-  .trust-line { margin-top: 16px; font-size: 0.82rem; color: var(--ink-soft); }
-  .trust-line a { color: var(--accent-deep); font-weight: 600; text-decoration: none; }
+  /* ---------- Cinematic hero: video background with overlaid copy,
+     then a scroll-driven black panel that slides up to reveal a photo
+     grid -- sells the experience of using Rumbo instead of just
+     listing it as a product. Reuses the same tall-wrapper +
+     position:sticky inner pattern already proven below for
+     #inside-scroll, rather than inventing a second scroll mechanism.
+     Falls back to a plain stacked layout (.cinema-static, added by JS
+     on prefers-reduced-motion or if anything in the scroll module
+     throws) and to mobile below 760px regardless of JS. */
+  .cinema-scroll { position: relative; height: 320vh; }
+  .cinema-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; }
 
-  /* ---------- Hero visual: real photo + floating badges ---------- */
-  .hero-visual {
-    position: relative;
-    width: 100%;
-    max-width: 480px;
-    margin: 48px auto 0;
-    /*
-      header.hero has align-items:center, so a flex item sizes to its
-      own content instead of stretching -- the old <img> masked this
-      because a percentage-width replaced element falls back to its
-      natural intrinsic size when the containing block is indefinite.
-      A canvas/div has no such fallback, so it collapsed to 0 width.
-      Verified live via getComputedStyle before adding this.
-    */
+  .cinema-video-wrap { position: absolute; inset: 0; z-index: 0; background: #1c1a17; }
+  .cinema-video-wrap video,
+  .cinema-video-wrap .cinema-video-fallback {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; display: block;
   }
-  .hero-stage {
-    position: relative;
-    z-index: 0;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 30px 60px -20px rgba(18,18,20,0.28);
+  .cinema-video-wrap .cinema-video-fallback { display: none; }
+  .cinema-video-wrap.no-video video { display: none; }
+  .cinema-video-wrap.no-video .cinema-video-fallback { display: block; }
+  .cinema-scrim {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(18,18,20,0.38) 0%, rgba(18,18,20,0.12) 38%, rgba(18,18,20,0.58) 100%);
   }
-  .hero-stage canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; }
-  .hero-stage-fallback { position: absolute; inset: 0; display: none; }
-  .hero-stage-fallback img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .hero-stage.no-3d .hero-stage-fallback { display: block; }
-  .float-badge {
-    position: absolute;
-    z-index: 1;
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    box-shadow: 0 14px 30px -10px rgba(18,18,20,0.18);
-    animation: float-in 0.6s ease backwards;
+
+  .cinema-copy {
+    position: relative; z-index: 1; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 48px 20px; color: #fff;
   }
-  .float-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
-  .float-badge.b1 { top: 6%; left: -11%; animation-delay: 0.15s; }
-  .float-badge.b2 { bottom: 10%; right: -9%; animation-delay: 0.3s; }
-  .float-badge.b3 { top: 44%; right: -13%; animation-delay: 0.45s; }
-  @media (max-width: 620px) {
-    .float-badge.b1 { left: -4%; top: -6%; }
-    .float-badge.b2 { right: -4%; bottom: -6%; }
-    .float-badge.b3 { display: none; }
+  .cinema-copy .eyebrow { background: rgba(255,255,255,0.16); color: #fff; }
+  .cinema-copy h1 { font-size: clamp(2.2rem, 5.4vw, 3.7rem); margin: 18px 0 16px; color: #fff; text-shadow: 0 2px 24px rgba(0,0,0,0.3); }
+  .cinema-copy h1 .accent-word { color: var(--accent); }
+  .cinema-copy .sub { font-size: 1.05rem; max-width: 46ch; line-height: 1.6; margin: 0 auto 28px; color: rgba(255,255,255,0.88); }
+  .cinema-copy .trust-line { margin-top: 16px; font-size: 0.82rem; color: rgba(255,255,255,0.82); }
+  .cinema-copy .trust-line a { color: #fff; font-weight: 700; }
+
+  .cinema-panel {
+    position: absolute; inset: 0; z-index: 2;
+    background: #141210;
+    transform: translateY(100%);
+    will-change: transform;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 24px;
   }
-  @keyframes float-in {
-    from { opacity: 0; transform: translateY(10px) scale(0.96); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+  .cinema-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 1100px; width: 100%; }
+  .cinema-cell { position: relative; aspect-ratio: 3 / 4; border-radius: 10px; overflow: hidden; background: #221f1a; }
+  .cinema-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* Scale-in is JS-driven as the panel scrolls by; starts at 0 only
+     when the scroll module is actually running (.cinema-js), so the
+     static/mobile fallback below never hides them behind a stuck
+     transform if the script never runs. */
+  .cinema-js .cinema-cell { transform: scale(0); will-change: transform; }
+
+  @media (max-width: 1020px) { .cinema-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 640px) { .cinema-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+
+  /* Static fallback: mobile (always) or desktop when the scroll module
+     never ran (reduced motion / no IntersectionObserver / threw).
+     The copy sits in normal flow BELOW the video instead of overlaid
+     on top of it, so it switches back to the page's normal dark-on-
+     light palette -- the white/scrim styling above is only correct
+     while the text is actually floating over the video. */
+  @media (max-width: 760px) { .cinema-scroll { height: auto; } }
+  @media (max-width: 760px), (prefers-reduced-motion: reduce) {
+    .cinema-sticky { position: relative; height: auto; }
+    .cinema-video-wrap { position: relative; height: 68vh; }
+    .cinema-scrim { display: none; }
+    .cinema-copy {
+      position: static; height: auto; padding: 36px 20px 44px;
+      color: var(--ink);
+    }
+    .cinema-copy .eyebrow { background: var(--accent-soft); color: var(--accent-deep); }
+    .cinema-copy h1 { color: var(--ink); text-shadow: none; }
+    .cinema-copy .sub { color: var(--ink-soft); }
+    .cinema-copy .trust-line { color: var(--ink-soft); }
+    .cinema-copy .trust-line a { color: var(--accent-deep); }
+    .cinema-panel { position: relative; transform: none; padding: 0 20px 52px; }
+    .cinema-js .cinema-cell { transform: none; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .float-badge { animation: none; }
+  .cinema-scroll.cinema-static { height: auto; }
+  .cinema-scroll.cinema-static .cinema-sticky { position: relative; height: auto; }
+  .cinema-scroll.cinema-static .cinema-video-wrap { position: relative; height: 68vh; }
+  .cinema-scroll.cinema-static .cinema-scrim { display: none; }
+  .cinema-scroll.cinema-static .cinema-copy {
+    position: static; height: auto; padding: 36px 20px 44px;
+    color: var(--ink);
   }
+  .cinema-scroll.cinema-static .cinema-copy .eyebrow { background: var(--accent-soft); color: var(--accent-deep); }
+  .cinema-scroll.cinema-static .cinema-copy h1 { color: var(--ink); text-shadow: none; }
+  .cinema-scroll.cinema-static .cinema-copy .sub { color: var(--ink-soft); }
+  .cinema-scroll.cinema-static .cinema-copy .trust-line { color: var(--ink-soft); }
+  .cinema-scroll.cinema-static .cinema-copy .trust-line a { color: var(--accent-deep); }
+  .cinema-scroll.cinema-static .cinema-panel { position: relative; transform: none; padding: 0 20px 52px; }
+  .cinema-scroll.cinema-static .cinema-cell { transform: none !important; }
 
   /* ---------- Generic sections ---------- */
   section { padding: 76px 0; }
@@ -522,38 +532,45 @@
   </ul>
 </nav>
 
-<div class="hero-band dotted">
-  <div class="wrap">
-    <header class="hero" id="top">
-      <div class="hero-copy">
-        <span class="eyebrow"><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--accent-deep);"></span> Agenda física · desarrollo profesional</span>
-        <h1>Diez minutos que ordenan <span class="accent-word">tu día entero</span>.</h1>
-        <p class="sub">
-          Planifica tus metas de carrera, haz seguimiento de tus hábitos y organiza
-          tu semana — en papel, sin apps, sin nada que configurar antes de empezar.
-        </p>
-        <div class="hero-ctas">
-          <a class="btn btn-accent" id="cta-hero" target="_blank" rel="noopener">
-            <svg class="wa-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.07-1.33A9.96 9.96 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.6 0-3.1-.43-4.4-1.18l-.32-.19-3 .79.8-2.93-.2-.3A7.96 7.96 0 0 1 4 12c0-4.42 3.58-8 8-8s8 3.58 8 8-3.58 8-8 8zm4.4-5.6c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.92-1.18-.71-.63-1.19-1.41-1.33-1.65-.14-.24-.01-.37.11-.49.12-.12.27-.3.4-.46.13-.16.17-.27.26-.45.09-.18.04-.33-.04-.46-.08-.12-.5-1.2-.68-1.65-.18-.44-.37-.38-.5-.39h-.43c-.14 0-.37.05-.56.27-.19.22-.75.73-.75 1.78s.77 2.07.88 2.21c.11.14 1.5 2.3 3.65 3.13 1.82.7 2.19.56 2.59.52.4-.04 1.3-.53 1.48-1.04.18-.51.18-.95.13-1.04-.05-.09-.2-.14-.44-.26z"/></svg>
-            Pedir por WhatsApp
-          </a>
-          <a class="btn btn-outline" href="#inside">Ver qué hay adentro</a>
-        </div>
-        <p class="trust-line">$42 pago único · envío incluido · <a id="cta-sample" href="#" target="_blank" rel="noopener">recibe gratis la página 1 en PDF</a></p>
-      </div>
+<div class="cinema-scroll" id="cinema-scroll">
+  <div class="cinema-sticky" id="top">
+    <div class="cinema-video-wrap" id="cinema-video-wrap">
+      <video id="cinema-video" muted playsinline loop preload="auto" poster="assets/lifestyle-writing.jpg">
+        <source src="assets/hero-video.mp4" type="video/mp4">
+      </video>
+      <img class="cinema-video-fallback" src="assets/lifestyle-writing.jpg" alt="Alguien escribiendo en su agenda Rumbo, cómodamente sentado una mañana">
+      <div class="cinema-scrim"></div>
+    </div>
 
-      <div class="hero-visual">
-        <div class="float-badge b1"><span class="dot"></span> Garantía 30 días</div>
-        <div class="float-badge b2"><span class="dot"></span> Envío incluido</div>
-        <div class="float-badge b3"><span class="dot"></span> 3 ediciones</div>
-        <div class="hero-stage" id="hero-stage">
-          <canvas id="hero-canvas" role="img" aria-label="Alguien escribiendo en su agenda Rumbo, cómodamente sentado una mañana, con la tapa de la edición Medianoche en primer plano"></canvas>
-          <div class="hero-stage-fallback">
-            <img src="assets/lifestyle-writing.jpg" alt="Alguien escribiendo en su agenda Rumbo, cómodamente sentado una mañana">
-          </div>
-        </div>
+    <div class="cinema-copy">
+      <span class="eyebrow"><span class="dot" style="width:6px;height:6px;border-radius:50%;background:#fff;"></span> Agenda física · desarrollo profesional</span>
+      <h1>Diez minutos que ordenan <span class="accent-word">tu día entero</span>.</h1>
+      <p class="sub">
+        Planifica tus metas de carrera, haz seguimiento de tus hábitos y organiza
+        tu semana — en papel, sin apps, sin nada que configurar antes de empezar.
+      </p>
+      <div class="hero-ctas">
+        <a class="btn btn-accent" id="cta-hero" target="_blank" rel="noopener">
+          <svg class="wa-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.07-1.33A9.96 9.96 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.6 0-3.1-.43-4.4-1.18l-.32-.19-3 .79.8-2.93-.2-.3A7.96 7.96 0 0 1 4 12c0-4.42 3.58-8 8-8s8 3.58 8 8-3.58 8-8 8zm4.4-5.6c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.92-1.18-.71-.63-1.19-1.41-1.33-1.65-.14-.24-.01-.37.11-.49.12-.12.27-.3.4-.46.13-.16.17-.27.26-.45.09-.18.04-.33-.04-.46-.08-.12-.5-1.2-.68-1.65-.18-.44-.37-.38-.5-.39h-.43c-.14 0-.37.05-.56.27-.19.22-.75.73-.75 1.78s.77 2.07.88 2.21c.11.14 1.5 2.3 3.65 3.13 1.82.7 2.19.56 2.59.52.4-.04 1.3-.53 1.48-1.04.18-.51.18-.95.13-1.04-.05-.09-.2-.14-.44-.26z"/></svg>
+          Pedir por WhatsApp
+        </a>
+        <a class="btn btn-outline" href="#inside">Ver qué hay adentro</a>
       </div>
-    </header>
+      <p class="trust-line">$42 pago único · envío incluido · <a id="cta-sample" href="#" target="_blank" rel="noopener">recibe gratis la página 1 en PDF</a></p>
+    </div>
+
+    <div class="cinema-panel" id="cinema-panel">
+      <div class="cinema-grid" id="cinema-grid">
+        <div class="cinema-cell"><img src="assets/lifestyle-writing.jpg" alt="Alguien escribiendo en su agenda Rumbo una mañana cómoda" loading="lazy"></div>
+        <div class="cinema-cell"><img src="assets/medianoche.jpg" alt="Rumbo, edición Medianoche" loading="lazy"></div>
+        <div class="cinema-cell"><img src="assets/interior.jpg" alt="Página de metas de Rumbo" loading="lazy"></div>
+        <div class="cinema-cell"><img src="assets/arena.jpg" alt="Rumbo, edición Arena" loading="lazy"></div>
+        <div class="cinema-cell"><img src="assets/habitos.jpg" alt="Página de tracker de hábitos de Rumbo" loading="lazy"></div>
+        <div class="cinema-cell"><img src="assets/terracota.jpg" alt="Rumbo, edición Terracota" loading="lazy"></div>
+        <div class="cinema-cell"><img src="assets/calendario.jpg" alt="Página de calendario de Rumbo" loading="lazy"></div>
+        <div class="cinema-cell"><img src="assets/revision.jpg" alt="Página de revisión semanal de Rumbo" loading="lazy"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -990,27 +1007,7 @@
     }
   })();
 
-  // Subtle parallax on the whole hero visual (photo + its floating
-  // badges together, not the photo alone -- doing it on the image only
-  // made it drift out from under its own badges and overlap them).
-  // Capped drift, reduced-motion-safe. Reads scrollY and writes a
-  // transform; never touches native scroll, so it can't repeat the
-  // Lenis scroll-hijack bug from the earlier iteration.
-  (function () {
-    if (reduceMotion) return;
-    var heroVisual = document.querySelector('.hero-visual');
-    if (!heroVisual) return;
-    var ticking = false;
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        var offset = Math.min(window.scrollY * 0.05, 22);
-        heroVisual.style.transform = 'translateY(' + offset + 'px)';
-        ticking = false;
-      });
-    }, { passive: true });
-  })();
+
 </script>
 
 <script type="importmap">
@@ -1022,110 +1019,76 @@
 </script>
 <script type="module">
   /*
-    Hero chapter: the lifestyle photo (someone writing in Rumbo from a
-    cozy morning spot) as a single textured plane in a minimal Three.js
-    scene, with a slow, subtle idle drift -- just enough to read as
-    "alive" rather than a static <img>, restrained on purpose (this is
-    the very first thing a visitor sees; a loud 3D moment here would
-    repeat the earlier "3D hero" mistake that was explicitly rejected
-    this session). Falls back to the plain photo if WebGL fails or
-    under reduced motion, same pattern as every other 3D bit on this
-    page.
+    Cinematic hero chapter: autoplaying video + a scroll-driven black
+    panel revealing a photo grid. Plain JS reading scrollY in a RAF
+    loop (same technique the other chapters use), gated by
+    IntersectionObserver so it only runs while the section is near the
+    viewport. No Three.js here -- it's a real <video>, not a scene.
   */
   (function () {
-    var reduceMotionHero = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var stage = document.getElementById('hero-stage');
-    var canvas = document.getElementById('hero-canvas');
-    if (reduceMotionHero || !stage || !canvas) {
-      if (stage) stage.classList.add('no-3d');
-      return;
+    var reduceMotionCinema = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var scrollEl = document.getElementById('cinema-scroll');
+    var sticky = document.getElementById('cinema-scroll') && document.querySelector('.cinema-sticky');
+    var panel = document.getElementById('cinema-panel');
+    var videoWrap = document.getElementById('cinema-video-wrap');
+    var video = document.getElementById('cinema-video');
+    var cells = scrollEl ? Array.prototype.slice.call(scrollEl.querySelectorAll('.cinema-cell')) : [];
+
+    function goStatic() {
+      if (scrollEl) scrollEl.classList.add('cinema-static');
     }
-    (async function () {
+
+    if (!scrollEl || !sticky || !panel || !video || !cells.length) {
+      goStatic();
+    } else if (reduceMotionCinema) {
+      goStatic();
+    } else {
       try {
-        var THREE = await import('three');
-        var scene = new THREE.Scene();
-        var bg = 0xfaf6ee;
-        scene.background = new THREE.Color(bg);
+        if (!('IntersectionObserver' in window)) throw new Error('no io');
+        scrollEl.classList.add('cinema-js');
 
-        var camera = new THREE.PerspectiveCamera(35, 1, 0.1, 10);
-        camera.position.z = 5;
+        function ease(p) { return 1 - Math.pow(1 - p, 3); }
+        function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
-        var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.setClearColor(bg, 1); // see inside-scroll module below: scene.background alone isn't enough
+        var running = false;
+        function render() {
+          var rect = scrollEl.getBoundingClientRect();
+          var scrollable = scrollEl.offsetHeight - window.innerHeight;
+          var progress = scrollable > 0 ? clamp(-rect.top / scrollable, 0, 1) : 0;
 
-        var loader = new THREE.TextureLoader();
-        var plane;
-        var tex = loader.load('assets/lifestyle-writing.jpg', function () {
-          fitCover();
-        }, undefined, function () {
-          stage.classList.add('no-3d');
-        });
-        tex.colorSpace = THREE.SRGBColorSpace;
+          var panelP = clamp(progress / 0.35, 0, 1);
+          panel.style.transform = 'translateY(' + (1 - ease(panelP)) * 100 + '%)';
 
-        var geo = new THREE.PlaneGeometry(1, 1);
-        var mat = new THREE.MeshBasicMaterial({ map: tex });
-        plane = new THREE.Mesh(geo, mat);
-        scene.add(plane);
+          var gridP = clamp((progress - 0.35) / 0.55, 0, 1);
+          cells.forEach(function (cell, i) {
+            var start = (i / cells.length) * 0.8;
+            var cellP = clamp((gridP - start) / 0.3, 0, 1);
+            cell.style.transform = 'scale(' + ease(cellP) + ')';
+          });
 
-        function frustumSize(distance) {
-          var vFov = camera.fov * Math.PI / 180;
-          var height = 2 * Math.tan(vFov / 2) * distance;
-          return { width: height * camera.aspect, height: height };
+          if (running) requestAnimationFrame(render);
         }
 
-        function fitCover() {
-          var distance = camera.position.z - plane.position.z;
-          var f = frustumSize(distance);
-          plane.scale.set(f.width, f.height, 1);
-          if (tex.image) {
-            var containerAspect = f.width / f.height;
-            var imageAspect = tex.image.width / tex.image.height;
-            if (containerAspect > imageAspect) {
-              tex.repeat.set(1, imageAspect / containerAspect);
-              tex.offset.set(0, (1 - imageAspect / containerAspect) / 2);
-            } else {
-              tex.repeat.set(containerAspect / imageAspect, 1);
-              tex.offset.set((1 - containerAspect / imageAspect) / 2, 0);
-            }
-          }
-        }
-
-        function resize() {
-          var w = canvas.clientWidth;
-          var h = canvas.clientHeight;
-          if (!w || !h) return;
-          camera.aspect = w / h;
-          camera.updateProjectionMatrix();
-          renderer.setSize(w, h, false);
-          fitCover();
-        }
-        resize();
-        window.addEventListener('resize', resize);
-
-        var start = performance.now();
-        var running = true;
-        document.addEventListener('visibilitychange', function () {
-          running = !document.hidden;
-          if (running) requestAnimationFrame(frame);
-        });
-
-        function frame(now) {
-          if (!running) return;
-          var t = (now - start) / 1000;
-          // Slow breathing drift -- a few thousandths of rotation, well
-          // under anything a viewer would consciously register as
-          // "spinning", just enough to not feel frozen.
-          plane.rotation.y = Math.sin(t * 0.25) * 0.025;
-          plane.rotation.x = Math.sin(t * 0.18) * 0.012;
-          renderer.render(scene, camera);
-          requestAnimationFrame(frame);
-        }
-        requestAnimationFrame(frame);
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            running = entry.isIntersecting;
+            if (running) requestAnimationFrame(render);
+          });
+        }, { threshold: 0, rootMargin: '0px' });
+        io.observe(scrollEl);
       } catch (err) {
-        stage.classList.add('no-3d');
+        goStatic();
       }
-    })();
+
+      // Autoplay the loop; if the browser blocks it (or the file 404s)
+      // fall back to the static poster photo, same defensive pattern
+      // as every other media element on this page.
+      video.addEventListener('error', function () { videoWrap.classList.add('no-video'); });
+      var playPromise = video.play();
+      if (playPromise && playPromise.catch) {
+        playPromise.catch(function () { videoWrap.classList.add('no-video'); });
+      }
+    }
   })();
 </script>
 <script type="module">
