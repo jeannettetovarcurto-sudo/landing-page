@@ -29,32 +29,8 @@
     --on-accent: #fff8f2;
     color-scheme: light;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #141312;
-      --surface: #1d1b18;
-      --ink: #f4f1ec;
-      --ink-soft: #bcb6ab;
-      --line: #322e28;
-      --accent: #e3833f;
-      --accent-deep: #f0a467;
-      --accent-soft: #3a2518;
-      --on-accent: #1a1008;
-      color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #141312;
-    --surface: #1d1b18;
-    --ink: #f4f1ec;
-    --ink-soft: #bcb6ab;
-    --line: #322e28;
-    --accent: #e3833f;
-    --accent-deep: #f0a467;
-    --accent-soft: #3a2518;
-    --on-accent: #1a1008;
-    color-scheme: dark;
-  }
+  /* Tema fijo en claro a pedido explícito -- sin variante oscura,
+     ni automática (prefers-color-scheme) ni manual (data-theme). */
 
   * { box-sizing: border-box; }
   html { overflow-x: hidden; }
@@ -119,6 +95,43 @@
   .dotted {
     background-image: radial-gradient(circle, var(--line) 1.4px, transparent 1.4px);
     background-size: 26px 26px;
+  }
+
+  /* Small pill row previewing the 4 stops of the "Qué hay adentro"
+     scroll journey, so the section intro isn't just bare text on an
+     empty white background before the sticky camera animation kicks in. */
+  .inside-preview {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 28px;
+  }
+  .inside-preview-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 7px 16px 7px 7px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    box-shadow: 0 10px 22px -14px rgba(18,18,20,0.18);
+  }
+  .inside-preview-step .num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent-deep);
+    font-size: 0.72rem;
+    font-weight: 800;
+    flex-shrink: 0;
   }
 
   /* ---------- Nav ---------- */
@@ -545,11 +558,17 @@
 </div>
 
 <div class="wrap">
-  <section id="inside">
+  <section id="inside" class="dotted">
     <div class="section-head reveal">
       <span class="eyebrow">Por dentro</span>
       <h2>Un recorrido de 10 minutos</h2>
       <p>No es una lista de funciones — es lo que de verdad pasa cada mañana cuando la abres. Sigue bajando.</p>
+      <div class="inside-preview">
+        <span class="inside-preview-step"><span class="num">01</span> Metas</span>
+        <span class="inside-preview-step"><span class="num">02</span> Hábitos</span>
+        <span class="inside-preview-step"><span class="num">03</span> Calendario</span>
+        <span class="inside-preview-step"><span class="num">04</span> Revisión</span>
+      </div>
     </div>
   </section>
 
