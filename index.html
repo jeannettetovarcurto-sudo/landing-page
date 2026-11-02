@@ -1,0 +1,1507 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Rumbo</title>
+<style>
+  /*
+    Full visual pivot, per direct user feedback ("1/10, re feo") and 5
+    reference sites (Pendo, MockFlow, UserPersona, UXCam, Pixso): all
+    five share one language -- bold black/near-black sans headlines (no
+    serif), light paper backgrounds, a dotted-grid texture behind the
+    hero, pill-shaped buttons (filled dark + outline), small floating
+    UI-style badge cards around the hero visual, and colorful rounded
+    icon tiles for feature lists. None of them use 3D or photography-led
+    heroes, so the Three.js hero is dropped entirely in favor of the
+    real product photo styled the way those sites style theirs.
+    Accent color is warm terracotta/amber (not SaaS blue) to stay
+    truthful to a leather/gold-foil physical product instead of
+    copying an unrelated tool's brand color.
+  */
+  :root {
+    --bg: #ffffff;
+    --surface: #f6f4f0;
+    --ink: #121214;
+    --ink-soft: #5c5952;
+    --line: #e8e3da;
+    --accent: #c1551f;
+    --accent-deep: #9e4315;
+    --accent-soft: #fbe9dd;
+    --on-accent: #fff8f2;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141312;
+      --surface: #1d1b18;
+      --ink: #f4f1ec;
+      --ink-soft: #bcb6ab;
+      --line: #322e28;
+      --accent: #e3833f;
+      --accent-deep: #f0a467;
+      --accent-soft: #3a2518;
+      --on-accent: #1a1008;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141312;
+    --surface: #1d1b18;
+    --ink: #f4f1ec;
+    --ink-soft: #bcb6ab;
+    --line: #322e28;
+    --accent: #e3833f;
+    --accent-deep: #f0a467;
+    --accent-soft: #3a2518;
+    --on-accent: #1a1008;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { overflow-x: hidden; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, sans-serif;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  .wrap { max-width: 1120px; margin: 0 auto; }
+
+  h1, h2, h3, h4 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0;
+    line-height: 1.08;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--accent-deep);
+    background: var(--accent-soft);
+    padding: 5px 12px;
+    border-radius: 100px;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    font-size: 0.86rem;
+    font-weight: 700;
+    padding: 14px 26px;
+    border-radius: 100px;
+    border: 1.5px solid var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); opacity: 0.88; }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn.btn-sm { padding: 10px 20px; font-size: 0.78rem; }
+  .btn .wa-icon { width: 15px; height: 15px; flex-shrink: 0; }
+  .btn-accent { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+  .btn-outline { background: transparent; border-color: var(--line); color: var(--ink); }
+  .btn-outline:hover { border-color: var(--ink); opacity: 1; }
+
+  /* ---------- Dotted grid texture ---------- */
+  .dotted {
+    background-image: radial-gradient(circle, var(--line) 1.4px, transparent 1.4px);
+    background-size: 26px 26px;
+  }
+
+  /* ---------- Nav ---------- */
+  nav.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px 0;
+    max-width: 1120px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 5;
+  }
+  nav.topbar .wordmark {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    color: var(--ink);
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+  }
+  /*
+    Logomark: a compass needle inside a ring, pointing off-axis
+    (toward a "rumbo", a bearing) rather than straight up -- the
+    direct visual match for the brand name, in the same two-tone
+    needle convention real compasses use (one half ink, one half
+    accent) so it reads as a compass at a glance, not an abstract
+    diamond.
+  */
+  .logo-mark { width: 26px; height: 26px; flex-shrink: 0; }
+  .logo-mark .ring { stroke: var(--ink); }
+  .logo-mark .needle-accent { fill: var(--accent); }
+  .logo-mark .needle-ink { fill: var(--ink); }
+  .logo-mark .pivot { fill: var(--bg); stroke: var(--ink); stroke-width: 1; }
+  nav.topbar .nav-links { display: flex; gap: 26px; list-style: none; margin: 0; padding: 0; }
+  nav.topbar .nav-links a { font-size: 0.86rem; font-weight: 500; color: var(--ink-soft); text-decoration: none; }
+  nav.topbar .nav-links a:hover { color: var(--ink); }
+  @media (max-width: 620px) { nav.topbar .nav-links { display: none; } }
+
+  /* ---------- Hero ---------- */
+  .hero-band { padding-top: 8px; padding-bottom: 40px; }
+  header.hero {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 0 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero-copy h1 {
+    font-size: clamp(2.4rem, 5.6vw, 3.9rem);
+    margin: 18px 0 16px;
+  }
+  .hero-copy h1 .accent-word { color: var(--accent); }
+  .hero-copy .sub {
+    font-size: 1.08rem;
+    color: var(--ink-soft);
+    max-width: 46ch;
+    line-height: 1.6;
+    margin: 0 0 28px;
+  }
+  .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px; }
+  .trust-line { margin-top: 16px; font-size: 0.82rem; color: var(--ink-soft); }
+  .trust-line a { color: var(--accent-deep); font-weight: 600; text-decoration: none; }
+
+  /* ---------- Hero visual: real photo + floating badges ---------- */
+  .hero-visual {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    margin: 48px auto 0;
+    /*
+      header.hero has align-items:center, so a flex item sizes to its
+      own content instead of stretching -- the old <img> masked this
+      because a percentage-width replaced element falls back to its
+      natural intrinsic size when the containing block is indefinite.
+      A canvas/div has no such fallback, so it collapsed to 0 width.
+      Verified live via getComputedStyle before adding this.
+    */
+  }
+  .hero-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px -20px rgba(18,18,20,0.28);
+  }
+  .hero-stage canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; }
+  .hero-stage-fallback { position: absolute; inset: 0; display: none; }
+  .hero-stage-fallback img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero-stage.no-3d .hero-stage-fallback { display: block; }
+  .float-badge {
+    position: absolute;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    box-shadow: 0 14px 30px -10px rgba(18,18,20,0.18);
+    animation: float-in 0.6s ease backwards;
+  }
+  .float-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .float-badge.b1 { top: 6%; left: -11%; animation-delay: 0.15s; }
+  .float-badge.b2 { bottom: 10%; right: -9%; animation-delay: 0.3s; }
+  .float-badge.b3 { top: 44%; right: -13%; animation-delay: 0.45s; }
+  @media (max-width: 620px) {
+    .float-badge.b1 { left: -4%; top: -6%; }
+    .float-badge.b2 { right: -4%; bottom: -6%; }
+    .float-badge.b3 { display: none; }
+  }
+  @keyframes float-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .float-badge { animation: none; }
+  }
+
+  /* ---------- Generic sections ---------- */
+  section { padding: 76px 0; }
+  @media (max-width: 760px) { section { padding: 52px 0; } }
+  /*
+    overflow:hidden as a defensive clip: on mobile, a 1fr grid track's
+    computed width can end up a few px wider than the section's own
+    measured width (grid's internal track sizing vs
+    getBoundingClientRect disagreed by ~14px here, verified live,
+    cause not fully pinned down) -- whatever the exact cause, a child
+    that bleeds past the rounded corner should never be visible, so
+    this clips it regardless.
+  */
+  section.surface { background: var(--surface); overflow: hidden; }
+  #fit-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: 0; }
+  /*
+    A positioned element (the canvas) paints above static siblings
+    regardless of DOM order -- the exact bug hit earlier this session
+    with sticky sections. Explicit position+z-index on the real
+    content keeps it on top this time instead of relearning that.
+  */
+  #fit > .section-head, #fit > .fit-grid { position: relative; z-index: 1; }
+  .section-head { max-width: 56ch; margin: 0 auto 40px; text-align: center; }
+  .section-head .eyebrow { margin-bottom: 14px; }
+  .section-head h2 { font-size: clamp(1.9rem, 3.4vw, 2.5rem); }
+  .section-head p { color: var(--ink-soft); margin: 14px 0 0; line-height: 1.6; font-size: 1.02rem; }
+
+  /* ---------- Reveal-on-scroll (lightweight, no external deps) ---------- */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+
+  /*
+    "Qué hay adentro" scroll-journey: a scroll-driven camera travels a
+    fixed path past four framed photos of the real interior spreads,
+    one per stop, with a caption that flashes in/out near each stop.
+    No orbit/mouse-look -- purely scroll-position-driven, smoothed with
+    a lerp so it never jitters. The wrapper is 400vh (one screen per
+    stop) with a sticky inner viewport -- the same safe sticky pattern
+    already proven on this page (tall-enough wrapper, sticky child's
+    own height never exceeds the viewport).
+    Below 760px this entire mechanism is replaced by a plain stacked
+    list of the four real photos -- cheaper, simpler, and avoids
+    sticky/canvas edge cases on small screens and slow connections.
+  */
+  .inside-scroll { position: relative; height: 400vh; margin-top: 8px; }
+  @media (max-width: 760px) { .inside-scroll { height: auto; } }
+
+  .inside-sticky {
+    position: sticky; top: 0; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  @media (max-width: 760px) { .inside-sticky { display: none; } }
+
+  #inside-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; }
+
+  /*
+    inset:0 on .inside-caption needs a sized positioned ancestor to
+    resolve against -- a wrapper whose only children are themselves
+    absolutely positioned collapses to 0 height, which silently
+    collapses inset:0 children to 0 height too (found live: opacity
+    was correctly animating, nothing was ever visible). Centering with
+    top/left 50% + transform sidesteps the whole box entirely.
+  */
+  .inside-captions { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+  .inside-caption {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(420px, 86vw);
+    display: flex; flex-direction: column; justify-content: center;
+    text-align: center; opacity: 0;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    border-radius: 18px;
+    padding: 22px 26px;
+  }
+  .inside-caption .k { font-size: 0.78rem; font-weight: 700; color: var(--accent-deep); margin-bottom: 8px; }
+  .inside-caption h3 { font-size: 1.15rem; margin-bottom: 8px; }
+  .inside-caption p { font-size: 0.92rem; color: var(--ink-soft); line-height: 1.55; margin: 0; }
+
+  .inside-fallback { display: none; }
+  @media (max-width: 760px) {
+    .inside-fallback { display: flex; flex-direction: column; gap: 32px; }
+  }
+  .inside-fallback-row { display: flex; flex-direction: column; gap: 14px; }
+  .inside-fallback-row img { width: 100%; border-radius: 16px; box-shadow: 0 18px 36px -14px rgba(18,18,20,0.2); }
+  .inside-fallback-row .k { font-size: 0.78rem; font-weight: 700; color: var(--accent-deep); }
+  .inside-fallback-row h3 { font-size: 1.1rem; margin: 6px 0 6px; }
+  .inside-fallback-row p { font-size: 0.92rem; color: var(--ink-soft); line-height: 1.55; margin: 0; }
+
+  /* JS adds this to #inside-scroll if WebGL/canvas setup fails, or if
+     prefers-reduced-motion is set -- falls back to the same simple
+     stacked list used on mobile, at any screen size. */
+  .inside-scroll.no-3d .inside-sticky { display: none; }
+  .inside-scroll.no-3d { height: auto; }
+  .inside-scroll.no-3d .inside-fallback { display: flex; }
+
+  /* ---------- Edition selector ---------- */
+  .edition-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: center; }
+  @media (max-width: 760px) { .edition-picker { grid-template-columns: 1fr; } }
+  .edition-photo-wrap {
+    position: relative;
+    width: 100%;
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 32px;
+    display: flex;
+    justify-content: center;
+    /*
+      Grid items size to their content's min/max-content by default,
+      and this one's content (a capped-width image plus padding)
+      wanted to be wider than the single-column mobile grid track --
+      verified live: the wrap's own rounded card rendered 14px past
+      its section's edge, min-width:0 alone didn't stop it. An
+      explicit width:100% (with border-box sizing, set globally)
+      forces it to match the track instead of its content.
+    */
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .edition-stage {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    min-width: 0;
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px -14px rgba(18,18,20,0.22);
+  }
+  .edition-stage canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; }
+  .edition-stage-fallback { position: absolute; inset: 0; display: none; }
+  .edition-stage-fallback img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.25s ease; }
+  .edition-stage.no-3d .edition-stage-fallback { display: block; }
+  .edition-swatches { display: flex; flex-direction: column; gap: 10px; margin: 20px 0 20px; }
+  .edition-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .edition-swatch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1.5px solid var(--line);
+    border-radius: 100px;
+    padding: 8px 14px 8px 8px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .edition-swatch .dot { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; }
+  .edition-swatch[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); }
+  .edition-swatch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .qty-stepper { display: flex; align-items: center; gap: 2px; flex-shrink: 0; border: 1.5px solid var(--line); border-radius: 100px; padding: 2px; }
+  .qty-btn {
+    width: 28px; height: 28px; border-radius: 50%; border: none; background: transparent;
+    color: var(--ink); font-size: 1.05rem; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; line-height: 1;
+  }
+  .qty-btn:hover { background: var(--line); }
+  .qty-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .qty-value { min-width: 22px; text-align: center; font-size: 0.9rem; font-weight: 700; color: var(--ink); }
+  .order-summary {
+    background: var(--bg); border: 1.5px solid var(--line); border-radius: 14px;
+    padding: 14px 16px; margin: 0 0 18px; font-size: 0.88rem; color: var(--ink-soft);
+  }
+  .order-summary-line { display: flex; justify-content: space-between; padding: 2px 0; }
+  .order-summary-total { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-weight: 700; color: var(--ink); }
+  .edition-name { font-size: 1.3rem; margin-bottom: 6px; }
+  .limited-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--on-accent);
+    background: var(--accent);
+    padding: 5px 11px;
+    border-radius: 100px;
+    margin-bottom: 12px;
+  }
+  .limited-badge[hidden] { display: none; }
+  .price-row { display: flex; align-items: baseline; gap: 10px; margin: 18px 0 20px; }
+  .price-row .was { text-decoration: line-through; color: var(--ink-soft); font-size: 0.95rem; }
+  .price-row .now { font-family: 'Inter', sans-serif; font-size: 1.9rem; font-weight: 800; color: var(--ink); }
+  .price-row .note { font-size: 0.78rem; color: var(--ink-soft); }
+
+  /* ---------- Testimonial placeholder ---------- */
+  .testi-card {
+    max-width: 620px; margin: 0 auto;
+    background: var(--bg); border: 1px dashed var(--line); border-radius: 18px;
+    padding: 32px; text-align: center;
+  }
+  .testi-card p { color: var(--ink-soft); line-height: 1.6; margin: 0; font-size: 0.96rem; }
+
+  /* ---------- Fit ---------- */
+  .fit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 620px) { .fit-grid { grid-template-columns: 1fr; } }
+  .fit-col { border: 1px solid var(--line); background: var(--bg); padding: 24px 26px; border-radius: 18px; }
+  .fit-col.yes { border-color: var(--accent); }
+  .fit-col h3 { font-size: 1.02rem; margin-bottom: 14px; font-weight: 700; }
+  .fit-col ul { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 0.9rem; line-height: 1.7; }
+
+  .site-footer {
+    max-width: 1120px; margin: 0 auto; padding: 32px 0 56px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.78rem; color: var(--ink-soft);
+  }
+  .site-footer a { color: var(--accent-deep); }
+  @media (max-width: 480px) { .site-footer { flex-direction: column; gap: 10px; text-align: center; } }
+
+  /*
+    Hidden until the hero's own WhatsApp button scrolls out of view
+    (toggled via IntersectionObserver below) -- otherwise, right at
+    the top of the page on mobile, this bar and the hero CTA show the
+    same "Pedir por WhatsApp" button twice on one screen at once.
+  */
+  .sticky-wa {
+    display: none;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
+    padding: 10px max(16px, env(safe-area-inset-left, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-right, 0px));
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(6px);
+    border-top: 1px solid var(--line);
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+  }
+  .sticky-wa .btn { width: 100%; justify-content: center; }
+  @media (max-width: 620px) {
+    .sticky-wa { display: block; }
+    .sticky-wa.visible { transform: translateY(0); }
+    body { padding-bottom: 68px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .sticky-wa { transition: none; } }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+
+<nav class="topbar">
+  <a class="wordmark" href="#top">
+    <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+      <circle class="ring" cx="16" cy="16" r="14" fill="none" stroke-width="1.5"/>
+      <g transform="rotate(38 16 16)">
+        <polygon class="needle-accent" points="16,5 19.5,16 16,23"/>
+        <polygon class="needle-ink" points="16,5 12.5,16 16,23"/>
+      </g>
+      <circle class="pivot" cx="16" cy="16" r="2.4"/>
+    </svg>
+    Rumbo
+  </a>
+  <ul class="nav-links">
+    <li><a href="#inside">Qué hay adentro</a></li>
+    <li><a href="#editions">Ediciones</a></li>
+    <li><a href="#fit">¿Es para ti?</a></li>
+  </ul>
+</nav>
+
+<div class="hero-band dotted">
+  <div class="wrap">
+    <header class="hero" id="top">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--accent-deep);"></span> Agenda física · desarrollo profesional</span>
+        <h1>Diez minutos que ordenan <span class="accent-word">tu día entero</span>.</h1>
+        <p class="sub">
+          Planifica tus metas de carrera, haz seguimiento de tus hábitos y organiza
+          tu semana — en papel, sin apps, sin nada que configurar antes de empezar.
+        </p>
+        <div class="hero-ctas">
+          <a class="btn btn-accent" id="cta-hero" target="_blank" rel="noopener">
+            <svg class="wa-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.07-1.33A9.96 9.96 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.6 0-3.1-.43-4.4-1.18l-.32-.19-3 .79.8-2.93-.2-.3A7.96 7.96 0 0 1 4 12c0-4.42 3.58-8 8-8s8 3.58 8 8-3.58 8-8 8zm4.4-5.6c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.92-1.18-.71-.63-1.19-1.41-1.33-1.65-.14-.24-.01-.37.11-.49.12-.12.27-.3.4-.46.13-.16.17-.27.26-.45.09-.18.04-.33-.04-.46-.08-.12-.5-1.2-.68-1.65-.18-.44-.37-.38-.5-.39h-.43c-.14 0-.37.05-.56.27-.19.22-.75.73-.75 1.78s.77 2.07.88 2.21c.11.14 1.5 2.3 3.65 3.13 1.82.7 2.19.56 2.59.52.4-.04 1.3-.53 1.48-1.04.18-.51.18-.95.13-1.04-.05-.09-.2-.14-.44-.26z"/></svg>
+            Pedir por WhatsApp
+          </a>
+          <a class="btn btn-outline" href="#inside">Ver qué hay adentro</a>
+        </div>
+        <p class="trust-line">$42 pago único · envío incluido · <a id="cta-sample" href="#" target="_blank" rel="noopener">recibe gratis la página 1 en PDF</a></p>
+      </div>
+
+      <div class="hero-visual">
+        <div class="float-badge b1"><span class="dot"></span> Garantía 30 días</div>
+        <div class="float-badge b2"><span class="dot"></span> Envío incluido</div>
+        <div class="float-badge b3"><span class="dot"></span> 3 ediciones</div>
+        <div class="hero-stage" id="hero-stage">
+          <canvas id="hero-canvas" role="img" aria-label="Alguien escribiendo en su agenda Rumbo, cómodamente sentado una mañana, con la tapa de la edición Medianoche en primer plano"></canvas>
+          <div class="hero-stage-fallback">
+            <img src="assets/lifestyle-writing.jpg" alt="Alguien escribiendo en su agenda Rumbo, cómodamente sentado una mañana">
+          </div>
+        </div>
+      </div>
+    </header>
+  </div>
+</div>
+
+<div class="wrap">
+  <section id="inside">
+    <div class="section-head reveal">
+      <span class="eyebrow">Por dentro</span>
+      <h2>Un recorrido de 10 minutos</h2>
+      <p>No es una lista de funciones — es lo que de verdad pasa cada mañana cuando la abres. Sigue bajando.</p>
+    </div>
+  </section>
+
+  <div class="inside-scroll" id="inside-scroll">
+    <div class="inside-sticky">
+      <canvas id="inside-canvas" role="img" aria-label="Recorrido animado por las cuatro secciones interiores de Rumbo: metas, hábitos, calendario y revisión semanal"></canvas>
+      <div class="inside-captions" id="inside-captions">
+        <div class="inside-caption" data-stop="0">
+          <span class="k">01 · Metas</span>
+          <h3>Metas de carrera bien formadas</h3>
+          <p>En positivo y verificables: sabrás exactamente cuándo las lograste, no solo que "lo intentaste".</p>
+        </div>
+        <div class="inside-caption" data-stop="1">
+          <span class="k">02 · Hábitos</span>
+          <h3>Tracker de hábitos semanal</h3>
+          <p>Una cuadrícula para marcar lo que sí hiciste esta semana — constancia visible, no solo intención.</p>
+        </div>
+        <div class="inside-caption" data-stop="2">
+          <span class="k">03 · Calendario</span>
+          <h3>Calendario mensual y semanal</h3>
+          <p>Vista de semana para el día a día, vista de mes para no perder el panorama completo.</p>
+        </div>
+        <div class="inside-caption" data-stop="3">
+          <span class="k">04 · Revisión</span>
+          <h3>Revisión guiada</h3>
+          <p>Preguntas ya impresas al cierre de cada semana: qué aprendí, qué ajusto para la siguiente.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="inside-fallback" id="inside-fallback">
+      <div class="inside-fallback-row">
+        <img src="assets/interior.jpg" alt="Página de metas de Rumbo, layout semanal en papel grueso color crema">
+        <span class="k">01 · Metas</span>
+        <h3>Metas de carrera bien formadas</h3>
+        <p>En positivo y verificables: sabrás exactamente cuándo las lograste, no solo que "lo intentaste".</p>
+      </div>
+      <div class="inside-fallback-row">
+        <img src="assets/habitos.jpg" alt="Página de tracker de hábitos de Rumbo">
+        <span class="k">02 · Hábitos</span>
+        <h3>Tracker de hábitos semanal</h3>
+        <p>Una cuadrícula para marcar lo que sí hiciste esta semana — constancia visible, no solo intención.</p>
+      </div>
+      <div class="inside-fallback-row">
+        <img src="assets/calendario.jpg" alt="Página de calendario mensual y semanal de Rumbo">
+        <span class="k">03 · Calendario</span>
+        <h3>Calendario mensual y semanal</h3>
+        <p>Vista de semana para el día a día, vista de mes para no perder el panorama completo.</p>
+      </div>
+      <div class="inside-fallback-row">
+        <img src="assets/revision.jpg" alt="Página de revisión semanal guiada de Rumbo">
+        <span class="k">04 · Revisión</span>
+        <h3>Revisión guiada</h3>
+        <p>Preguntas ya impresas al cierre de cada semana: qué aprendí, qué ajusto para la siguiente.</p>
+      </div>
+    </div>
+  </div>
+
+  <section id="editions" class="surface" style="border-radius: 28px;">
+    <div class="section-head reveal">
+      <span class="eyebrow">Elige la tuya</span>
+      <h2>Tu edición</h2>
+      <p>Mismo papel, mismo método — el color que vas a ver cada mañana en tu escritorio.</p>
+    </div>
+
+    <div class="edition-picker reveal">
+      <div class="edition-photo-wrap">
+        <div class="edition-stage" id="edition-stage">
+          <canvas id="edition-canvas" role="img" aria-label="Tapa de la edición Rumbo seleccionada"></canvas>
+          <div class="edition-stage-fallback">
+            <img id="edition-photo" src="assets/medianoche.jpg" alt="Rumbo, Edición Medianoche, tapa azul marino con detalle dorado">
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="limited-badge" id="limited-badge" hidden>Edición limitada</span>
+        <h3 class="edition-name" id="edition-name">Edición Medianoche</h3>
+        <p style="color:var(--ink-soft); line-height:1.6; margin:0 0 4px; max-width:40ch;" id="edition-desc">Azul marino profundo, el tono de lanzamiento — serio, nada corporativo-frío.</p>
+
+        <div class="edition-swatches" id="edition-swatches">
+          <div class="edition-row">
+            <button type="button" class="edition-swatch" data-edition="Medianoche" data-photo="assets/medianoche.jpg" data-desc="Azul marino profundo, el tono de lanzamiento — serio, nada corporativo-frío." aria-pressed="true">
+              <span class="dot" style="background:#1e3a5f"></span> Medianoche
+            </button>
+            <div class="qty-stepper" data-qty-for="Medianoche">
+              <button type="button" class="qty-btn qty-minus" aria-label="Quitar una unidad de Medianoche">−</button>
+              <span class="qty-value" aria-live="polite">0</span>
+              <button type="button" class="qty-btn qty-plus" aria-label="Agregar una unidad de Medianoche">+</button>
+            </div>
+          </div>
+          <div class="edition-row">
+            <button type="button" class="edition-swatch" data-edition="Arena" data-photo="assets/arena.jpg" data-desc="Beige cálido en lino — más discreto, de oficina." aria-pressed="false">
+              <span class="dot" style="background:#c7ab82"></span> Arena
+            </button>
+            <div class="qty-stepper" data-qty-for="Arena">
+              <button type="button" class="qty-btn qty-minus" aria-label="Quitar una unidad de Arena">−</button>
+              <span class="qty-value" aria-live="polite">0</span>
+              <button type="button" class="qty-btn qty-plus" aria-label="Agregar una unidad de Arena">+</button>
+            </div>
+          </div>
+          <div class="edition-row">
+            <button type="button" class="edition-swatch" data-edition="Terracota" data-photo="assets/terracota.jpg" data-desc="Terracota quemado en cuero — el más cálido de las tres, edición limitada." aria-pressed="false">
+              <span class="dot" style="background:#b55a34"></span> Terracota
+            </button>
+            <div class="qty-stepper" data-qty-for="Terracota">
+              <button type="button" class="qty-btn qty-minus" aria-label="Quitar una unidad de Terracota">−</button>
+              <span class="qty-value" aria-live="polite">0</span>
+              <button type="button" class="qty-btn qty-plus" aria-label="Agregar una unidad de Terracota">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-summary" id="order-summary" hidden>
+          <div id="order-summary-lines"></div>
+          <div class="order-summary-total"><span>Total</span><span id="order-summary-total">$0</span></div>
+        </div>
+
+        <div class="price-row"><span class="now">$<span data-count-to="42">0</span></span><span class="note">pago único · envío incluido</span></div>
+        <a class="btn btn-accent" id="cta-edition" target="_blank" rel="noopener">
+          <svg class="wa-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.07-1.33A9.96 9.96 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.6 0-3.1-.43-4.4-1.18l-.32-.19-3 .79.8-2.93-.2-.3A7.96 7.96 0 0 1 4 12c0-4.42 3.58-8 8-8s8 3.58 8 8-3.58 8-8 8zm4.4-5.6c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.92-1.18-.71-.63-1.19-1.41-1.33-1.65-.14-.24-.01-.37.11-.49.12-.12.27-.3.4-.46.13-.16.17-.27.26-.45.09-.18.04-.33-.04-.46-.08-.12-.5-1.2-.68-1.65-.18-.44-.37-.38-.5-.39h-.43c-.14 0-.37.05-.56.27-.19.22-.75.73-.75 1.78s.77 2.07.88 2.21c.11.14 1.5 2.3 3.65 3.13 1.82.7 2.19.56 2.59.52.4-.04 1.3-.53 1.48-1.04.18-.51.18-.95.13-1.04-.05-.09-.2-.14-.44-.26z"/></svg>
+          <span id="cta-edition-label">Pedir Edición Medianoche</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="testimonials">
+    <div class="section-head reveal">
+      <span class="eyebrow">Prueba social</span>
+      <h2>Testimonios reales</h2>
+    </div>
+    <div class="testi-card reveal">
+      <p>Rumbo está por lanzarse. En cuanto lleguen las primeras entregas, aquí van a aparecer experiencias reales de quienes la usaron — con nombre, sin caras inventadas.</p>
+    </div>
+  </section>
+
+  <section id="fit" class="surface" style="border-radius: 28px; position: relative;">
+    <canvas id="fit-canvas" aria-hidden="true"></canvas>
+    <div class="section-head reveal">
+      <span class="eyebrow">¿Encaja?</span>
+      <h2>¿Es para ti?</h2>
+    </div>
+    <div class="fit-grid reveal">
+      <div class="fit-col yes">
+        <h3>Es para ti si…</h3>
+        <ul>
+          <li>Ya probaste planners en blanco y los abandonaste</li>
+          <li>Quieres estructura sin pagar por sesiones en vivo</li>
+          <li>Prefieres escribir a mano antes que abrir una app más</li>
+        </ul>
+      </div>
+      <div class="fit-col">
+        <h3>Mejor espera si…</h3>
+        <ul>
+          <li>Buscas acompañamiento personalizado 1:1</li>
+          <li>Prefieres todo digital y sincronizado entre dispositivos</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="site-footer">
+  <span>Rumbo © 2027</span>
+  <span>Pedidos por <a id="footer-wa" target="_blank" rel="noopener">WhatsApp</a></span>
+</div>
+
+<div class="sticky-wa">
+  <a class="btn btn-accent" id="cta-sticky" target="_blank" rel="noopener">
+    <svg class="wa-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.07-1.33A9.96 9.96 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.6 0-3.1-.43-4.4-1.18l-.32-.19-3 .79.8-2.93-.2-.3A7.96 7.96 0 0 1 4 12c0-4.42 3.58-8 8-8s8 3.58 8 8-3.58 8-8 8zm4.4-5.6c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.92-1.18-.71-.63-1.19-1.41-1.33-1.65-.14-.24-.01-.37.11-.49.12-.12.27-.3.4-.46.13-.16.17-.27.26-.45.09-.18.04-.33-.04-.46-.08-.12-.5-1.2-.68-1.65-.18-.44-.37-.38-.5-.39h-.43c-.14 0-.37.05-.56.27-.19.22-.75.73-.75 1.78s.77 2.07.88 2.21c.11.14 1.5 2.3 3.65 3.13 1.82.7 2.19.56 2.59.52.4-.04 1.3-.53 1.48-1.04.18-.51.18-.95.13-1.04-.05-.09-.2-.14-.44-.26z"/></svg>
+    Pedir por WhatsApp
+  </a>
+</div>
+
+<script>
+  var WHATSAPP_NUMBER = '51999999999'; // reemplazar por el numero real del negocio
+  function waLink(msg) { return 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg); }
+
+  var currentEdition = 'Medianoche';
+  var UNIT_PRICE = 42;
+  var EDITIONS = ['Medianoche', 'Arena', 'Terracota'];
+  var cart = { Medianoche: 0, Arena: 0, Terracota: 0 };
+
+  function baseLinks() {
+    ['cta-hero', 'cta-sticky'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.href = waLink('Hola, quiero pedir mi Rumbo, Edición ' + currentEdition + ' ($' + UNIT_PRICE + ').');
+    });
+    renderCart();
+  }
+  baseLinks();
+
+  // Order summary: lets a buyer pick different quantities per color
+  // (e.g. 2 Medianoche + 1 Terracota) before the WhatsApp message is
+  // composed, instead of relying on them to hand-edit a single-item
+  // pre-filled text. Falls back to the single-edition CTA/message
+  // above whenever the cart is empty, so a one-item buyer sees the
+  // exact same flow as before.
+  function renderCart() {
+    var editionCta = document.getElementById('cta-edition');
+    var editionCtaLabel = document.getElementById('cta-edition-label');
+    var summaryBox = document.getElementById('order-summary');
+    var summaryLines = document.getElementById('order-summary-lines');
+    var summaryTotal = document.getElementById('order-summary-total');
+
+    var totalUnits = EDITIONS.reduce(function (sum, name) { return sum + cart[name]; }, 0);
+
+    if (totalUnits === 0) {
+      summaryBox.hidden = true;
+      summaryLines.innerHTML = '';
+      if (editionCtaLabel) editionCtaLabel.textContent = 'Pedir Edición ' + currentEdition;
+      if (editionCta) editionCta.href = waLink('Hola, quiero pedir mi Rumbo, Edición ' + currentEdition + ' ($' + UNIT_PRICE + ').');
+      return;
+    }
+
+    var totalPrice = totalUnits * UNIT_PRICE;
+    var lineParts = [];
+    summaryLines.innerHTML = '';
+    EDITIONS.forEach(function (name) {
+      if (!cart[name]) return;
+      lineParts.push(cart[name] + 'x ' + name);
+      var row = document.createElement('div');
+      row.className = 'order-summary-line';
+      row.innerHTML = '<span>' + cart[name] + 'x Edición ' + name + '</span><span>$' + (cart[name] * UNIT_PRICE) + '</span>';
+      summaryLines.appendChild(row);
+    });
+    summaryBox.hidden = false;
+    summaryTotal.textContent = '$' + totalPrice;
+
+    var unitsLabel = totalUnits === 1 ? 'unidad' : 'unidades';
+    if (editionCtaLabel) editionCtaLabel.textContent = 'Pedir por WhatsApp — ' + totalUnits + ' ' + unitsLabel;
+    if (editionCta) editionCta.href = waLink('Hola, quiero pedir: ' + lineParts.join(', ') + ' (' + totalUnits + ' ' + unitsLabel + ', $' + totalPrice + ' total).');
+  }
+
+  document.querySelectorAll('.qty-stepper').forEach(function (stepper) {
+    var name = stepper.getAttribute('data-qty-for');
+    var valueEl = stepper.querySelector('.qty-value');
+    stepper.querySelector('.qty-minus').addEventListener('click', function () {
+      cart[name] = Math.max(0, cart[name] - 1);
+      valueEl.textContent = cart[name];
+      renderCart();
+    });
+    stepper.querySelector('.qty-plus').addEventListener('click', function () {
+      cart[name] = cart[name] + 1;
+      valueEl.textContent = cart[name];
+      renderCart();
+    });
+  });
+
+  var sampleEl = document.getElementById('cta-sample');
+  if (sampleEl) sampleEl.href = waLink('Hola, quiero ver gratis la página 1 de Rumbo en PDF antes de pedir.');
+  var footerWaEl = document.getElementById('footer-wa');
+  if (footerWaEl) footerWaEl.href = waLink('Hola, quiero pedir mi Rumbo.');
+
+  // Edition picker: swap real photo, name, description, badge and CTA label/link.
+  var editionPhoto = document.getElementById('edition-photo');
+  var editionName = document.getElementById('edition-name');
+  var editionDesc = document.getElementById('edition-desc');
+  var editionCtaLabel = document.getElementById('cta-edition-label');
+  var limitedBadge = document.getElementById('limited-badge');
+  var swatches = document.querySelectorAll('.edition-swatch');
+
+  swatches.forEach(function (sw) {
+    sw.addEventListener('click', function () {
+      swatches.forEach(function (s) { s.setAttribute('aria-pressed', 'false'); });
+      sw.setAttribute('aria-pressed', 'true');
+      var name = sw.getAttribute('data-edition');
+      currentEdition = name;
+      var nextPhoto = sw.getAttribute('data-photo');
+      editionPhoto.style.opacity = '0';
+      setTimeout(function () {
+        editionPhoto.src = nextPhoto;
+        editionPhoto.alt = 'Rumbo, Edición ' + name;
+        editionPhoto.style.opacity = '1';
+      }, 120);
+      // Hands off to the Three.js crossfade below when it's running;
+      // the fallback <img> swap above still happens regardless, so
+      // nothing breaks if the 3D module never initialized.
+      if (window.__editionStageSetPhoto) window.__editionStageSetPhoto(nextPhoto);
+      editionName.textContent = 'Edición ' + name;
+      editionDesc.textContent = sw.getAttribute('data-desc');
+      editionCtaLabel.textContent = 'Pedir Edición ' + name;
+      limitedBadge.hidden = name !== 'Terracota';
+      baseLinks();
+    });
+  });
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Inertial smooth scroll: wheel input accumulates a target position,
+  // a rAF loop eases the real scroll toward it, so entering the page
+  // feels fluid (like a film) instead of the hard stop-start of native
+  // wheel scrolling (like a form). Hand-rolled instead of Lenis: Lenis
+  // was tried twice on this page and both times its internal scroll
+  // state silently never reached the real scrollbar (confirmed live
+  // both times -- instrumented and watched gsap.ticker run, watched
+  // lenis.scroll update, watched window.scrollY never move -- not a
+  // guess). This is the same well-established technique Lenis itself
+  // is built on, just small enough to fully verify by hand. Desktop
+  // only -- touch devices already have good native momentum scroll,
+  // and intercepting wheel there would fight the OS, not improve it.
+  // Skipped entirely under reduced motion.
+  (function () {
+    try {
+      var isTouch = window.matchMedia('(pointer: coarse)').matches;
+      if (reduceMotion || isTouch) return;
+      var current = window.scrollY;
+      var target = current;
+      var ticking = false;
+      function clampTarget() {
+        var max = document.documentElement.scrollHeight - window.innerHeight;
+        target = Math.max(0, Math.min(max, target));
+      }
+      function raf() {
+        current += (target - current) * 0.12;
+        if (Math.abs(target - current) < 0.5) {
+          current = target;
+          window.scrollTo(0, current);
+          ticking = false;
+          return;
+        }
+        window.scrollTo(0, current);
+        requestAnimationFrame(raf);
+      }
+      window.addEventListener('wheel', function (e) {
+        e.preventDefault();
+        target += e.deltaY;
+        clampTarget();
+        if (!ticking) { ticking = true; requestAnimationFrame(raf); }
+      }, { passive: false });
+      // Keeps target in sync with scrolling that doesn't go through the
+      // wheel handler above (keyboard, scrollbar drag, anchor links).
+      window.addEventListener('scroll', function () {
+        if (!ticking) { current = window.scrollY; target = current; }
+      }, { passive: true });
+    } catch (err) { /* native scroll still works */ }
+  })();
+
+  function animateCount(el, to, duration) {
+    if (reduceMotion) { el.textContent = to; return; }
+    var start = performance.now();
+    function step(now) {
+      var p = Math.min(1, (now - start) / duration);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(eased * to);
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = to;
+    }
+    requestAnimationFrame(step);
+  }
+
+  // Shows the sticky mobile WhatsApp bar only once the hero's own
+  // WhatsApp button has scrolled out of view, so the two never show
+  // the same CTA on screen at once.
+  (function () {
+    try {
+      var heroCta = document.getElementById('cta-hero');
+      var stickyBar = document.querySelector('.sticky-wa');
+      if (!heroCta || !stickyBar || !('IntersectionObserver' in window)) return;
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          stickyBar.classList.toggle('visible', !entry.isIntersecting);
+        });
+      }, { threshold: 0 });
+      io.observe(heroCta);
+    } catch (err) { /* sticky bar just stays hidden */ }
+  })();
+
+  // Lightweight scroll-reveal, no external library: fade+slide elements
+  // in as they enter the viewport, and count up any [data-count-to]
+  // number inside them at the same moment -- a restrained nod to the
+  // "price counts itself up" pattern (seen on scrolltide.co/templates),
+  // done in plain JS instead of pulling in another scroll library.
+  // Falls back to fully visible (CSS already handles
+  // prefers-reduced-motion) if IntersectionObserver is unavailable.
+  (function () {
+    try {
+      var items = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        items.forEach(function (el) {
+          el.classList.add('in');
+          el.querySelectorAll('[data-count-to]').forEach(function (c) { c.textContent = c.getAttribute('data-count-to'); });
+        });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            entry.target.querySelectorAll('[data-count-to]').forEach(function (c) {
+              animateCount(c, parseInt(c.getAttribute('data-count-to'), 10), 700);
+            });
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+      items.forEach(function (el) { io.observe(el); });
+    } catch (err) {
+      document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+    }
+  })();
+
+  // Subtle parallax on the whole hero visual (photo + its floating
+  // badges together, not the photo alone -- doing it on the image only
+  // made it drift out from under its own badges and overlap them).
+  // Capped drift, reduced-motion-safe. Reads scrollY and writes a
+  // transform; never touches native scroll, so it can't repeat the
+  // Lenis scroll-hijack bug from the earlier iteration.
+  (function () {
+    if (reduceMotion) return;
+    var heroVisual = document.querySelector('.hero-visual');
+    if (!heroVisual) return;
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        var offset = Math.min(window.scrollY * 0.05, 22);
+        heroVisual.style.transform = 'translateY(' + offset + 'px)';
+        ticking = false;
+      });
+    }, { passive: true });
+  })();
+</script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+<script type="module">
+  /*
+    Hero chapter: the lifestyle photo (someone writing in Rumbo from a
+    cozy morning spot) as a single textured plane in a minimal Three.js
+    scene, with a slow, subtle idle drift -- just enough to read as
+    "alive" rather than a static <img>, restrained on purpose (this is
+    the very first thing a visitor sees; a loud 3D moment here would
+    repeat the earlier "3D hero" mistake that was explicitly rejected
+    this session). Falls back to the plain photo if WebGL fails or
+    under reduced motion, same pattern as every other 3D bit on this
+    page.
+  */
+  (function () {
+    var reduceMotionHero = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var stage = document.getElementById('hero-stage');
+    var canvas = document.getElementById('hero-canvas');
+    if (reduceMotionHero || !stage || !canvas) {
+      if (stage) stage.classList.add('no-3d');
+      return;
+    }
+    (async function () {
+      try {
+        var THREE = await import('three');
+        var scene = new THREE.Scene();
+        var bg = 0xfaf6ee;
+        scene.background = new THREE.Color(bg);
+
+        var camera = new THREE.PerspectiveCamera(35, 1, 0.1, 10);
+        camera.position.z = 5;
+
+        var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setClearColor(bg, 1); // see inside-scroll module below: scene.background alone isn't enough
+
+        var loader = new THREE.TextureLoader();
+        var plane;
+        var tex = loader.load('assets/lifestyle-writing.jpg', function () {
+          fitCover();
+        }, undefined, function () {
+          stage.classList.add('no-3d');
+        });
+        tex.colorSpace = THREE.SRGBColorSpace;
+
+        var geo = new THREE.PlaneGeometry(1, 1);
+        var mat = new THREE.MeshBasicMaterial({ map: tex });
+        plane = new THREE.Mesh(geo, mat);
+        scene.add(plane);
+
+        function frustumSize(distance) {
+          var vFov = camera.fov * Math.PI / 180;
+          var height = 2 * Math.tan(vFov / 2) * distance;
+          return { width: height * camera.aspect, height: height };
+        }
+
+        function fitCover() {
+          var distance = camera.position.z - plane.position.z;
+          var f = frustumSize(distance);
+          plane.scale.set(f.width, f.height, 1);
+          if (tex.image) {
+            var containerAspect = f.width / f.height;
+            var imageAspect = tex.image.width / tex.image.height;
+            if (containerAspect > imageAspect) {
+              tex.repeat.set(1, imageAspect / containerAspect);
+              tex.offset.set(0, (1 - imageAspect / containerAspect) / 2);
+            } else {
+              tex.repeat.set(containerAspect / imageAspect, 1);
+              tex.offset.set((1 - containerAspect / imageAspect) / 2, 0);
+            }
+          }
+        }
+
+        function resize() {
+          var w = canvas.clientWidth;
+          var h = canvas.clientHeight;
+          if (!w || !h) return;
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h, false);
+          fitCover();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        var start = performance.now();
+        var running = true;
+        document.addEventListener('visibilitychange', function () {
+          running = !document.hidden;
+          if (running) requestAnimationFrame(frame);
+        });
+
+        function frame(now) {
+          if (!running) return;
+          var t = (now - start) / 1000;
+          // Slow breathing drift -- a few thousandths of rotation, well
+          // under anything a viewer would consciously register as
+          // "spinning", just enough to not feel frozen.
+          plane.rotation.y = Math.sin(t * 0.25) * 0.025;
+          plane.rotation.x = Math.sin(t * 0.18) * 0.012;
+          renderer.render(scene, camera);
+          requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      } catch (err) {
+        stage.classList.add('no-3d');
+      }
+    })();
+  })();
+</script>
+<script type="module">
+  /*
+    Ediciones chapter: the selected cover as a textured plane, and
+    switching editions crossfades to a second plane with a slight
+    turn (rotation.y) in the same motion -- reads as "turning the
+    cover over" rather than a flat opacity swap. Two planes are
+    reused and swapped (ping-pong), never recreated, so repeated
+    clicks don't leak geometry/materials.
+  */
+  (function () {
+    var reduceMotionEdition = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var stage = document.getElementById('edition-stage');
+    var canvas = document.getElementById('edition-canvas');
+    if (!stage || !canvas) return;
+    if (reduceMotionEdition) { stage.classList.add('no-3d'); return; }
+    (async function () {
+      try {
+        var THREE = await import('three');
+        var scene = new THREE.Scene();
+
+        var camera = new THREE.PerspectiveCamera(35, 1, 0.1, 10);
+        camera.position.z = 5;
+
+        var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        var loader = new THREE.TextureLoader();
+
+        function makePlane() {
+          var geo = new THREE.PlaneGeometry(1, 1);
+          var mat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
+          var mesh = new THREE.Mesh(geo, mat);
+          scene.add(mesh);
+          return mesh;
+        }
+        var front = makePlane();
+        var back = makePlane();
+        front.material.opacity = 1;
+
+        function frustumSize(distance) {
+          var vFov = camera.fov * Math.PI / 180;
+          var height = 2 * Math.tan(vFov / 2) * distance;
+          return { width: height * camera.aspect, height: height };
+        }
+
+        function fitCover(mesh, tex) {
+          var distance = camera.position.z - mesh.position.z;
+          var f = frustumSize(distance);
+          mesh.scale.set(f.width, f.height, 1);
+          if (tex.image) {
+            var containerAspect = f.width / f.height;
+            var imageAspect = tex.image.width / tex.image.height;
+            if (containerAspect > imageAspect) {
+              tex.repeat.set(1, imageAspect / containerAspect);
+              tex.offset.set(0, (1 - imageAspect / containerAspect) / 2);
+            } else {
+              tex.repeat.set(containerAspect / imageAspect, 1);
+              tex.offset.set((1 - containerAspect / imageAspect) / 2, 0);
+            }
+          }
+        }
+
+        function loadInto(mesh, src) {
+          loader.load(src, function (tex) {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            mesh.material.map = tex;
+            mesh.material.needsUpdate = true;
+            fitCover(mesh, tex);
+          });
+        }
+        loadInto(front, 'assets/medianoche.jpg');
+
+        function resize() {
+          var w = canvas.clientWidth, h = canvas.clientHeight;
+          if (!w || !h) return;
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h, false);
+          if (front.material.map) fitCover(front, front.material.map);
+          if (back.material.map) fitCover(back, back.material.map);
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        var transitioning = false;
+        var pendingSrc = null;
+        window.__editionStageSetPhoto = function (src) {
+          // A transition already in flight used to just drop later
+          // clicks -- verified live: click Medianoche, then Arena,
+          // then Terracota fast, and the photo stayed on Medianoche
+          // while the text/CTA said Terracota. Queue the latest
+          // requested src instead, and run it the moment the current
+          // transition finishes, so the photo always catches up to
+          // whatever edition is actually selected.
+          if (transitioning) { pendingSrc = src; return; }
+          transitioning = true;
+          loader.load(src, function (tex) {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            back.material.map = tex;
+            back.material.needsUpdate = true;
+            fitCover(back, tex);
+            back.rotation.y = -0.3;
+            back.material.opacity = 0;
+
+            var start = performance.now();
+            var duration = 480;
+            function step(now) {
+              var p = Math.min(1, (now - start) / duration);
+              var eased = 1 - Math.pow(1 - p, 3);
+              back.material.opacity = eased;
+              back.rotation.y = -0.3 * (1 - eased);
+              front.material.opacity = 1 - eased;
+              front.rotation.y = 0.3 * eased;
+              if (p < 1) {
+                requestAnimationFrame(step);
+              } else {
+                // Swap roles: the plane that just faded in becomes
+                // "front" for the next transition.
+                var tmp = front;
+                front = back;
+                back = tmp;
+                back.material.opacity = 0;
+                back.rotation.y = 0;
+                transitioning = false;
+                if (pendingSrc) {
+                  var next = pendingSrc;
+                  pendingSrc = null;
+                  window.__editionStageSetPhoto(next);
+                }
+              }
+            }
+            requestAnimationFrame(step);
+          });
+        };
+
+        var running = true;
+        document.addEventListener('visibilitychange', function () {
+          running = !document.hidden;
+          if (running) requestAnimationFrame(loop);
+        });
+        function loop() {
+          if (!running) return;
+          renderer.render(scene, camera);
+          requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+      } catch (err) {
+        stage.classList.add('no-3d');
+      }
+    })();
+  })();
+</script>
+<script type="module">
+  /*
+    "Qué hay adentro" camera-spline scroll journey.
+
+    Scroll position 0 to 1 (mapped from the 400vh wrapper) drives a
+    camera along a fixed CatmullRom spline past four planes, each
+    textured with one of the four real interior-spread photos. No free
+    orbit, no mouse look -- the camera only ever moves along the spline,
+    driven by scroll. The raw scroll progress is smoothed with a lerp
+    factor of 0.08 so the motion never jitters frame to frame.
+
+    Each caption fades in between local progress 0.2-0.3 of its own
+    stop's quarter of the journey, holds briefly, and is fully faded
+    out by local progress 0.4.
+
+    Falls back to a plain stacked list of the same four photos (same
+    markup already used on mobile) if WebGL/canvas setup throws, or if
+    prefers-reduced-motion is set -- this mirrors the fallback pattern
+    used throughout the rest of the page.
+  */
+  var reduceMotionInside = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var insideScrollEl = document.getElementById('inside-scroll');
+  var insideCanvas = document.getElementById('inside-canvas');
+
+  function fallbackToStaticInside() {
+    if (insideScrollEl) insideScrollEl.classList.add('no-3d');
+  }
+
+  if (reduceMotionInside || !insideScrollEl || !insideCanvas || window.innerWidth <= 760) {
+    fallbackToStaticInside();
+  } else {
+    (async function () {
+      try {
+        var THREE = await import('three');
+
+        var STOP_PHOTOS = ['assets/interior.jpg', 'assets/habitos.jpg', 'assets/calendario.jpg', 'assets/revision.jpg'];
+        var NUM_STOPS = STOP_PHOTOS.length;
+
+        var scene = new THREE.Scene();
+        var bgColor = 0xf6f4f0;
+        scene.background = new THREE.Color(bgColor);
+        scene.fog = new THREE.Fog(bgColor, 4, 15);
+
+        var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+
+        var renderer = new THREE.WebGLRenderer({ canvas: insideCanvas, antialias: true, alpha: false });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        // scene.background alone left the renderer's actual GL clear
+        // color stuck at black -- verified live via
+        // renderer.getClearColor(), confirmed not a guess. Setting it
+        // explicitly is what actually fixes the black canvas.
+        renderer.setClearColor(bgColor, 1);
+
+        // Fixed spline: start point + one point per stop, gently
+        // weaving left/right so passing artworks feel like a real
+        // walk through a room rather than a straight dolly shot.
+        var curvePoints = [new THREE.Vector3(0, 0, 2)];
+        for (var i = 0; i < NUM_STOPS; i++) {
+          var side = (i % 2 === 0) ? 1 : -1;
+          curvePoints.push(new THREE.Vector3(side * 0.5, 0.04 * side, 2 - (i + 1) * 4));
+        }
+        var curve = new THREE.CatmullRomCurve3(curvePoints);
+
+        // One plane per stop, offset to the opposite side of the path
+        // at roughly that stop's point along the curve, like a framed
+        // piece passed on a gallery wall.
+        var loader = new THREE.TextureLoader();
+        var planes = [];
+        STOP_PHOTOS.forEach(function (src, i) {
+          // The curve has one extra leading point (the start), so with
+          // near-equal segment lengths its arc-length parametrization
+          // places control point index (i+1) -- this stop -- at
+          // t=(i+1)/NUM_STOPS, i.e. the END of this stop's own scroll
+          // segment [i/N, (i+1)/N], not its start or midpoint. Verified
+          // live: placing it anywhere else put the wrong photo in frame
+          // while a different stop's caption was showing.
+          var t = (i + 1) / NUM_STOPS;
+          var center = curve.getPointAt(t);
+          var side = (i % 2 === 0) ? -1 : 1;
+          var tex = loader.load(src);
+          tex.colorSpace = THREE.SRGBColorSpace;
+          var mat = new THREE.MeshBasicMaterial({ map: tex });
+          var geo = new THREE.PlaneGeometry(1.6, 1.2);
+          var mesh = new THREE.Mesh(geo, mat);
+          mesh.position.set(center.x + side * 1.3, 0, center.z);
+          mesh.rotation.y = side * 0.5;
+          scene.add(mesh);
+          planes.push(mesh);
+        });
+
+        var rawT = 0;
+        var smoothedT = 0;
+        var LERP = 0.08;
+
+        function computeProgress() {
+          var rect = insideScrollEl.getBoundingClientRect();
+          var scrollable = rect.height - window.innerHeight;
+          if (scrollable <= 0) { rawT = 0; return; }
+          rawT = Math.max(0, Math.min(1, -rect.top / scrollable));
+        }
+
+        var captionEls = document.querySelectorAll('.inside-caption');
+        function updateCaptions() {
+          captionEls.forEach(function (el) {
+            var i = parseInt(el.getAttribute('data-stop'), 10);
+            var segStart = i / NUM_STOPS;
+            var segEnd = (i + 1) / NUM_STOPS;
+            var local = (smoothedT - segStart) / (segEnd - segStart);
+            local = Math.max(0, Math.min(1, local));
+            var op;
+            if (local < 0.2) op = 0;
+            else if (local < 0.3) op = (local - 0.2) / 0.1;
+            else if (local < 0.4) op = 1 - (local - 0.3) / 0.1;
+            else op = 0;
+            el.style.opacity = op;
+          });
+        }
+
+        function resize() {
+          var w = insideCanvas.clientWidth || insideScrollEl.clientWidth;
+          var h = insideCanvas.clientHeight || window.innerHeight;
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h, false);
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        var running = false;
+        function renderFrame() {
+          computeProgress();
+          smoothedT += (rawT - smoothedT) * LERP;
+          // Capped below 1 so the look-ahead target below is never at
+          // the exact same curve point as the camera -- at t=1 exactly
+          // that gap collapsed to zero, giving camera.lookAt() a
+          // zero-length direction and a degenerate view matrix that
+          // rendered as a plain black frame. Verified live: this was
+          // reproducible every time scroll reached the very bottom.
+          var posT = Math.min(smoothedT, 0.995);
+          var pos = curve.getPointAt(posT);
+          var lookTarget = curve.getPointAt(Math.min(posT + 0.03, 1));
+          camera.position.copy(pos);
+          camera.lookAt(lookTarget);
+          updateCaptions();
+          renderer.render(scene, camera);
+          if (running) requestAnimationFrame(renderFrame);
+        }
+
+        // Only run the render loop while the section is actually on
+        // screen -- a scroll-driven 3D section off-screen has nothing
+        // to show and shouldn't burn a continuous rAF loop.
+        var sectionIO = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting && !running) {
+              running = true;
+              requestAnimationFrame(renderFrame);
+            } else if (!entry.isIntersecting) {
+              running = false;
+            }
+          });
+        }, { threshold: 0 });
+        sectionIO.observe(insideScrollEl);
+      } catch (err) {
+        fallbackToStaticInside();
+      }
+    })();
+  }
+</script>
+<script type="module">
+  /*
+    "¿Es para ti?" chapter: no product photo here, just a comparison
+    of two short lists, so a loud 3D moment would be decoration for
+    its own sake -- the exact "3D carnival" anti-pattern. Instead, a
+    handful of soft blurred dots drift slowly behind the cards: calm,
+    unhurried motion that matches a reflective "is this for you"
+    moment, kept well clear of the text (cards have solid backgrounds)
+    and so subtle it reads as ambience, not a feature.
+  */
+  (function () {
+    var reduceMotionFit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var canvas = document.getElementById('fit-canvas');
+    var section = document.getElementById('fit');
+    if (reduceMotionFit || !canvas || !section) return;
+    (async function () {
+      try {
+        var THREE = await import('three');
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(35, 1, 0.1, 10);
+        camera.position.z = 5;
+
+        var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // A soft round sprite drawn once to an offscreen canvas, reused
+        // as the texture for every dot -- cheaper than loading an image
+        // and gives full control over the blur falloff.
+        var dotCanvas = document.createElement('canvas');
+        dotCanvas.width = dotCanvas.height = 128;
+        var dctx = dotCanvas.getContext('2d');
+        var grad = dctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+        grad.addColorStop(0, 'rgba(193,85,31,0.22)'); // --accent, kept faint on purpose
+        grad.addColorStop(1, 'rgba(193,85,31,0)');
+        dctx.fillStyle = grad;
+        dctx.fillRect(0, 0, 128, 128);
+        var dotTex = new THREE.CanvasTexture(dotCanvas);
+
+        var DOTS = 5;
+        var sprites = [];
+        for (var i = 0; i < DOTS; i++) {
+          var mat = new THREE.SpriteMaterial({ map: dotTex, transparent: true, depthWrite: false });
+          var sprite = new THREE.Sprite(mat);
+          var scale = 0.6 + Math.random() * 1.1;
+          sprite.scale.set(scale, scale, 1);
+          sprite.userData.baseX = (Math.random() - 0.5) * 4.5;
+          sprite.userData.baseY = (Math.random() - 0.5) * 2.4;
+          sprite.userData.phase = Math.random() * Math.PI * 2;
+          sprite.userData.speed = 0.06 + Math.random() * 0.08;
+          sprite.position.set(sprite.userData.baseX, sprite.userData.baseY, -1 - Math.random() * 1.5);
+          scene.add(sprite);
+          sprites.push(sprite);
+        }
+
+        function resize() {
+          var w = canvas.clientWidth, h = canvas.clientHeight;
+          if (!w || !h) return;
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h, false);
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        var running = false;
+        var start = performance.now();
+        function frame() {
+          if (!running) return;
+          var t = (performance.now() - start) / 1000;
+          sprites.forEach(function (s) {
+            s.position.x = s.userData.baseX + Math.sin(t * s.userData.speed + s.userData.phase) * 0.6;
+            s.position.y = s.userData.baseY + Math.cos(t * s.userData.speed * 0.8 + s.userData.phase) * 0.35;
+          });
+          renderer.render(scene, camera);
+          requestAnimationFrame(frame);
+        }
+
+        // Only render while the section is actually visible -- ambient
+        // background motion has no reason to run off-screen.
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting && !running) {
+              running = true;
+              requestAnimationFrame(frame);
+            } else if (!entry.isIntersecting) {
+              running = false;
+            }
+          });
+        }, { threshold: 0 });
+        io.observe(section);
+      } catch (err) {
+        // No fallback needed: the section's own solid background
+        // already looks complete without the ambient dots.
+      }
+    })();
+  })();
+</script>
