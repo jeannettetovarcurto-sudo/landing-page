@@ -59,7 +59,7 @@ Si agregás una edición nueva, agregala a la constante `EDITIONS` y duplicá un
 
 ## Flujo de ramas y commits
 
-- `main` → siempre desplegable, lo que está publicado (GitHub Pages sirve desde acá).
+- `master` → siempre desplegable, lo que está publicado (GitHub Pages sirve desde acá).
 - `develop` → rama de integración.
 - `feature/<nombre>` → una por cambio, creada desde `develop`, mergeada por PR.
 

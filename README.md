@@ -94,7 +94,7 @@ El sitio usa un scroll inercial hecho a mano (no una librería) para que la nave
 
 ## Flujo de trabajo (GitFlow)
 
-- `main` → siempre desplegable, es lo que está publicado.
+- `master` → siempre desplegable, es lo que está publicado.
 - `develop` → rama de integración, base para el siguiente trabajo.
 - `feature/<nombre-descriptivo>` → una rama por cambio, creada desde `develop`, mergeada de vuelta por PR.
 
@@ -104,7 +104,7 @@ Commits en formato [Conventional Commits](https://www.conventionalcommits.org/):
 
 No hay build. Cualquier cambio a `index.html` o `assets/` ya está "compilado" — solo hace falta commitear y pushear.
 
-Este sitio se publica con **GitHub Pages** desde la rama `main`, carpeta raíz (`/`). Un push a `main` actualiza el sitio en vivo automáticamente (puede tardar uno o dos minutos en propagarse).
+Este sitio se publica con **GitHub Pages** desde la rama `master`, carpeta raíz (`/`). Un push a `master` actualiza el sitio en vivo automáticamente (puede tardar uno o dos minutos en propagarse).
 
 ## Para quien retome el mantenimiento
 
