@@ -1,13 +1,6 @@
----
-name: rumbo-site-maintenance
-description: Mantener y extender la landing page de Rumbo (agenda física de desarrollo profesional) — un único index.html con escenas Three.js, scroll suave a mano y pedido por WhatsApp con carrito de cantidades por color. Usar esta skill siempre que se pida modificar, corregir o agregar algo al sitio de Rumbo.
----
+# Guía de mantenimiento — Rumbo
 
-# Mantenimiento del sitio Rumbo
-
-Este sitio es **un solo archivo** (`index.html`) sin build step: HTML + CSS + JS vanilla, Three.js cargado por CDN. No hay `npm install`, no hay bundler, no hay `src/`. Edita `index.html` directo.
-
-Lee primero `README.md` en la raíz del repo — tiene el mapa completo de secciones, variables clave (`UNIT_PRICE`, `WHATSAPP_NUMBER`, `EDITIONS`) y la tabla de "cambios comunes". Esta skill complementa ese README con las reglas de diseño/implementación que no son obvias leyendo el código una sola vez.
+Notas de implementación para quien siga trabajando en este sitio, humano o asistente de IA (cualquiera: Claude, ChatGPT, Copilot, etc.). Complementa al `README.md` — léelo primero para el mapa general del proyecto.
 
 ## Cómo probar cambios
 
@@ -16,7 +9,7 @@ Lee primero `README.md` en la raíz del repo — tiene el mapa completo de secci
    python3 -m http.server 8743
    ```
 2. Abre `http://localhost:8743` y **siempre cachebustea** la URL con un query param que cambie en cada prueba (`?cb=12345`) — el navegador sirve JS viejo en caché agresivamente y da falsos negativos.
-3. Si estás probando algo que depende de scroll o `requestAnimationFrame` (las escenas 3D, el scroll suave), mantené la pestaña/panel de preview **visible y en foco** — un panel oculto limita el framerate del navegador y da síntomas falsos de "se congeló" o "no responde".
+3. Si estás probando algo que depende de scroll o `requestAnimationFrame` (las escenas 3D, el scroll suave), mantené la pestaña **visible y en foco** — una pestaña en segundo plano limita el framerate del navegador y da síntomas falsos de "se congeló" o "no responde".
 4. Probá tanto desktop como un viewport mobile (375×812) — el sitio tiene comportamientos específicos para mobile (barra de WhatsApp fija, layout del selector de ediciones).
 
 ## Reglas de las escenas Three.js
@@ -64,8 +57,16 @@ Si necesitás tocar la velocidad o el "peso" del scroll, el único número que i
 
 Si agregás una edición nueva, agregala a la constante `EDITIONS` y duplicá un `.edition-row` — no hace falta tocar `renderCart()`.
 
+## Flujo de ramas y commits
+
+- `main` → siempre desplegable, lo que está publicado (GitHub Pages sirve desde acá).
+- `develop` → rama de integración.
+- `feature/<nombre>` → una por cambio, creada desde `develop`, mergeada por PR.
+
+Commits en [Conventional Commits](https://www.conventionalcommits.org/): `feat:` (funcionalidad nueva), `fix:` (corrección de bug), `chore:` (tareas de mantenimiento sin cambio de comportamiento), `docs:` (documentación), `refactor:`, `build:`, etc.
+
 ## Qué NO hacer
 
 - No agregues un bundler, framework o `package.json` — el punto del proyecto es que sea un solo archivo servible desde cualquier lado, incluido GitHub Pages sin build.
 - No metas credenciales, tokens ni precios de prueba reales en el HTML — el número de WhatsApp (`WHATSAPP_NUMBER`) sigue siendo un placeholder (`51999999999`) hasta que el negocio confirme el real.
-- No agregues 3D "decorativo" sin relación con el contenido de esa sección — cada escena existente tiene un propósito narrativo (mostrar el producto, mostrar el interior, mostrar las ediciones). Ver la skill `3d-website-architect` para el criterio completo de cuándo vale la pena usar 3D.
+- No agregues 3D "decorativo" sin relación con el contenido de esa sección — cada escena existente tiene un propósito narrativo (mostrar el producto, mostrar el interior, mostrar las ediciones).
